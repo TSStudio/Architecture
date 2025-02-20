@@ -240,5 +240,45 @@ typedef struct packed {
     word_t data;        // the data from AXI bus
 } cbus_resp_t;
 
+typedef struct packed {
+    logic  valid;
+    u64 pcPlus4;
+    u32 instr;
+} REG_IF_ID;
+
+typedef struct packed {
+    logic  valid;
+    u64 pcPlus4;
+    u64 rs1;
+    logic srcB;
+    u64 rs2;
+    u64 imm;
+    logic isWriteBack;
+    logic isMemWrite;
+    u5  wd;
+    u3  aluOp;
+    logic  isBranch;
+} REG_ID_EX;
+
+typedef struct packed {
+    logic  valid;
+    u64 rs2;
+    u64 aluOut;
+    logic isWriteBack;
+    u5  wd;
+    logic  isBranch;
+    u64 pcBranch;
+} REG_EX_MEM;
+
+typedef struct packed {
+    logic  valid;
+    u64 aluOut;
+    u5  wd;
+    logic isWriteBack;
+    u64 memOut;
+    logic  isBranch;
+    u64 pcBranch;
+} REG_MEM_WB;
+
 endpackage
 `endif
