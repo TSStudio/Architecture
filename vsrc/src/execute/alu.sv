@@ -2,7 +2,7 @@
 `include "include/common.sv"
 `endif
 
-module alu(
+module alu import common::*;(
     input logic clk,
     input u64 ia, ib,
     input u3 aluOp,

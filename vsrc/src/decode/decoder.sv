@@ -1,5 +1,6 @@
 `ifdef VERILATOR
 `include "include/common.sv"
+`include "src/decode/maindecoder.sv"
 `endif
 
 /*
@@ -24,7 +25,7 @@ typedef struct packed {
 } REG_ID_EX;
 */
 
-module decoder(
+module decoder import common::*;(
     input logic clk,rst,
     input logic bubbleHold,
     input REG_IF_ID moduleIn,
@@ -76,6 +77,8 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.wd <= wd;
         moduleOut.aluOp <= aluOp;
         moduleOut.isBranch <= isBranch;
+        moduleOut.instrAddr <= moduleIn.instrAddr;
+        moduleOut.instr <= moduleIn.instr;
     end
 end
 

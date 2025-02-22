@@ -2,15 +2,16 @@
 `include "include/common.sv"
 `endif
 
-module regfile(
+module regfile import common::*;(
     input logic clk,rst,
     input u5 rs1,rs2,wd,
     input u64 wdData,
     input logic wdEn,
-    output u64 rs1Data,rs2Data
+    output u64 rs1Data,rs2Data,
+    output u64 regs[31:0]
 );
 
-u64 regs[31:0];
+//u64 regs[31:0];
 
 always_ff @(negedge clk or posedge rst) begin
     if(rst) begin

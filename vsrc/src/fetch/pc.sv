@@ -2,7 +2,7 @@
 `include "include/common.sv"
 `endif
 
-module programCounter(
+module programCounter import common::*;(
     input logic clk,rst,
     input u64 pcIn,
     input logic pcInEn,
@@ -16,16 +16,17 @@ module programCounter(
 u64 curPC;
 u64 nextPC;
 
-logic hold=bubbleHold | (!ibus_resp.addr_ok) | (!ibus_resp.data_ok);
-logic curPCSent = 0;
+logic hold;
+assign hold = bubbleHold | (~(ibus_resp.addr_ok&ibus_resp.data_ok));
+logic curPCSent;
 
 initial begin
-    curPC <= PC_INIT;
-    nextPC <= PC_INIT+4;
-
-    ibus_req.addr <= curPC;
-
-    moduleOut.valid <= 0;
+    curPC = PCINIT;
+    nextPC = PCINIT+4;
+    ibus_req.addr = curPC;
+    ibus_req.valid = 1;
+    curPCSent = 0;
+    moduleOut.valid = 0;
 end
 
 always_ff @(posedge clk or posedge rst) begin
@@ -35,7 +36,8 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.valid <= 1;
         moduleOut.pcPlus4 <= nextPC;
         moduleOut.instr <= ibus_resp.data;
-        curPCSent <= 1;
+        moduleOut.instrAddr <= curPC;
+        curPCSent = 1;
     end
 end
 
@@ -44,7 +46,8 @@ always_ff @(negedge clk) begin
         curPC <= nextPC;
         nextPC <= nextPC + 4;
         ibus_req.addr <= nextPC;
-        curPCSent <= 0;
+        ibus_req.valid <= 1;
+        curPCSent = 0;
     end
 end
 

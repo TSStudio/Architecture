@@ -1,9 +1,9 @@
 `ifdef VERILATOR
 `include "include/common.sv"
-`include "alu.sv"
+`include "src/execute/alu.sv"
 `endif
 
-module execute(
+module execute import common::*;(
     input logic clk,rst,
     input logic bubbleHold,
     input REG_ID_EX moduleIn,
@@ -42,6 +42,9 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.wd = moduleIn.wd;
         moduleOut.isBranch = moduleIn.isBranch;
         moduleOut.pcBranch = pcBranch;
+
+        moduleOut.instrAddr = moduleIn.instrAddr;
+        moduleOut.instr = moduleIn.instr;
     end
 end
 

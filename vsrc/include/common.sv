@@ -244,6 +244,8 @@ typedef struct packed {
     logic  valid;
     u64 pcPlus4;
     u32 instr;
+
+    u64 instrAddr;
 } REG_IF_ID;
 
 typedef struct packed {
@@ -258,6 +260,9 @@ typedef struct packed {
     u5  wd;
     u3  aluOp;
     logic  isBranch;
+
+    u32 instr;
+    u64 instrAddr;
 } REG_ID_EX;
 
 typedef struct packed {
@@ -268,6 +273,9 @@ typedef struct packed {
     u5  wd;
     logic  isBranch;
     u64 pcBranch;
+
+    u32 instr;
+    u64 instrAddr;
 } REG_EX_MEM;
 
 typedef struct packed {
@@ -278,7 +286,19 @@ typedef struct packed {
     u64 memOut;
     logic  isBranch;
     u64 pcBranch;
+
+    u32 instr;
+    u64 instrAddr;
 } REG_MEM_WB;
+
+typedef struct packed {
+    logic valid;
+    u32 instr;
+    u64 instrAddr;
+    logic isWb;
+    u5  wd;
+    u64 wdData;
+} WB_COMMIT;
 
 endpackage
 `endif

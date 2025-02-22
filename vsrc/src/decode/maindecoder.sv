@@ -1,8 +1,9 @@
 `ifdef VERILATOR
 `include "include/common.sv"
+`include "src/decode/signextend.sv"
 `endif
 
-module maindecoder(
+module maindecoder import common::*;(
     input u32 instr,
     output u64 imm,
     output u5 rs1, rs2, wd,
@@ -19,7 +20,7 @@ u2 immtype; // I:00 S:01 B:10 J:11
 u3 optype;
 
 u3 funct3 = instr[14:12];
-u3 funct7 = instr[31:25];
+u7 funct7 = instr[31:25];
 
 assign immtype =
                 (instr[6:0]==7'b0010011 || instr[6:0]==7'b0000011)? 2'b00:
