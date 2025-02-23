@@ -61,8 +61,8 @@ decoder decoder_inst(
     .rs2(rs2),
     .rs1Data(rs1Data),
     .rs2Data(rs2Data),
-    .fwdSrc1(fwd_EX_EX),
-    .fwdSrc2(fwd_MEM_EX)
+    .fwdSrc1(fwd_MEM_EX),
+    .fwdSrc2(fwd_EX_EX)
 );
 
 execute execute_inst(
