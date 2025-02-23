@@ -32,6 +32,8 @@ always_ff @(posedge clk or posedge rst) begin
             else begin
                 wbEn <= 0;
                 moduleOut.isWb <= 0;
+                moduleOut.instrAddr <= moduleIn.instrAddr;
+                moduleOut.instr <= moduleIn.instr;
             end
         end
         else begin

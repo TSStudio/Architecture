@@ -21,6 +21,8 @@ REG_ID_EX id_ex;
 REG_EX_MEM ex_mem;
 REG_MEM_WB mem_wb;
 
+FORWARD_SOURCE fwd_EX_EX, fwd_MEM_EX;
+
 u5 rs1,rs2,wd;
 u64 rs1Data,rs2Data,wdData;
 logic wbEn;
@@ -58,7 +60,9 @@ decoder decoder_inst(
     .rs1(rs1),
     .rs2(rs2),
     .rs1Data(rs1Data),
-    .rs2Data(rs2Data)
+    .rs2Data(rs2Data),
+    .fwdSrc1(fwd_EX_EX),
+    .fwdSrc2(fwd_MEM_EX)
 );
 
 execute execute_inst(
@@ -66,7 +70,8 @@ execute execute_inst(
     .rst(rst),
     .bubbleHold(0),//todo
     .moduleIn(id_ex),
-    .moduleOut(ex_mem)
+    .moduleOut(ex_mem),
+    .forwardSource(fwd_EX_EX)
 );
 
 memory memory_inst(
@@ -74,7 +79,8 @@ memory memory_inst(
     .rst(rst),
     .bubbleHold(0),//todo
     .moduleIn(ex_mem),
-    .moduleOut(mem_wb)
+    .moduleOut(mem_wb),
+    .forwardSource(fwd_MEM_EX)
 );
 
 writeback writeback_inst(

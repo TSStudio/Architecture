@@ -6,12 +6,18 @@ module memory import common::*;(
     input logic clk,rst,
     input logic bubbleHold,
     input REG_EX_MEM moduleIn,
-    output REG_MEM_WB moduleOut
+    output REG_MEM_WB moduleOut,
+    output FORWARD_SOURCE forwardSource
 );
 
 initial begin
     moduleOut.valid = 0;
 end
+
+assign forwardSource.valid = moduleIn.valid;
+assign forwardSource.isWb = moduleIn.isWriteBack;
+assign forwardSource.wd = moduleIn.wd;
+assign forwardSource.wdData = moduleIn.aluOut;
 
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin

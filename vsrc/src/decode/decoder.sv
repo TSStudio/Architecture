@@ -32,22 +32,24 @@ module decoder import common::*;(
     output REG_ID_EX moduleOut,
 
     output u5 rs1, rs2,
-    input u64 rs1Data, rs2Data
+    input u64 rs1Data, rs2Data,
+
+    input FORWARD_SOURCE fwdSrc1, fwdSrc2
 );
 
 /*
-module maindecoder(
-    input u32 instr,
-    output u64 imm,
-    output u5 rs1, rs2, wd,
-    output u3 aluOp,
-    output logic isBranch, isWriteBack, srcB, isMemWrite
-);
+typedef struct packed {
+    logic valid;
+    logic isWb;
+    u5  wd;
+    u64 wdData;
+} FORWARD_SOURCE;
 */
 u64 imm;
 u5 wd;
 u3 aluOp;
 logic isBranch, isWriteBack, srcB, isMemWrite;
+logic rv64;
 
 maindecoder maindecoder_inst(
     .instr(moduleIn.instr),
@@ -59,8 +61,17 @@ maindecoder maindecoder_inst(
     .isBranch(isBranch),
     .isWriteBack(isWriteBack),
     .srcB(srcB),
-    .isMemWrite(isMemWrite)
+    .isMemWrite(isMemWrite),
+    .rv64(rv64)
 );
+
+u64 rs1DataOutS1, rs1DataOutS2, rs2DataOutS1, rs2DataOutS2;
+
+assign rs1DataOutS1 = fwdSrc1.valid & fwdSrc1.isWb & fwdSrc1.wd == rs1 ? fwdSrc1.wdData : rs1Data;
+assign rs1DataOutS2 = fwdSrc2.valid & fwdSrc2.isWb & fwdSrc2.wd == rs1 ? fwdSrc2.wdData : rs1DataOutS1;
+
+assign rs2DataOutS1 = fwdSrc1.valid & fwdSrc1.isWb & fwdSrc1.wd == rs2 ? fwdSrc1.wdData : rs2Data;
+assign rs2DataOutS2 = fwdSrc2.valid & fwdSrc2.isWb & fwdSrc2.wd == rs2 ? fwdSrc2.wdData : rs2DataOutS1;
 
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
@@ -68,15 +79,19 @@ always_ff @(posedge clk or posedge rst) begin
     end else begin
         moduleOut.valid <= moduleIn.valid & ~bubbleHold;
         moduleOut.pcPlus4 <= moduleIn.pcPlus4;
-        moduleOut.rs1 <= rs1Data;
         moduleOut.srcB <= srcB;
-        moduleOut.rs2 <= rs2Data;
+
+        moduleOut.rs1 <= rs1DataOutS2;
+        moduleOut.rs2 <= rs2DataOutS2;
+
         moduleOut.imm <= imm;
         moduleOut.isWriteBack <= isWriteBack;
         moduleOut.isMemWrite <= isMemWrite;
         moduleOut.wd <= wd;
         moduleOut.aluOp <= aluOp;
         moduleOut.isBranch <= isBranch;
+        moduleOut.rv64 <= rv64;
+
         moduleOut.instrAddr <= moduleIn.instrAddr;
         moduleOut.instr <= moduleIn.instr;
     end

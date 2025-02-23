@@ -260,6 +260,7 @@ typedef struct packed {
     u5  wd;
     u3  aluOp;
     logic  isBranch;
+    logic rv64;
 
     u32 instr;
     u64 instrAddr;
@@ -299,6 +300,13 @@ typedef struct packed {
     u5  wd;
     u64 wdData;
 } WB_COMMIT;
+
+typedef struct packed {
+    logic valid;
+    logic isWb;
+    u5  wd;
+    u64 wdData;
+} FORWARD_SOURCE;
 
 endpackage
 `endif

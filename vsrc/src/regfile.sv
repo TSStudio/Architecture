@@ -21,7 +21,7 @@ always_ff @(negedge clk or posedge rst) begin
         end
     end else begin
         if(wdEn) begin
-            regs[wd] <= wdData;
+            if(wd!=5'b00000) regs[wd] <= wdData;
         end
     end
 end
