@@ -95,4 +95,4 @@
 
 ## 实验结果
 
-HIT GOOD TRAP 了。
+![](./lab1_fig2.png)
