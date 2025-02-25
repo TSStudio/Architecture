@@ -256,7 +256,6 @@ typedef struct packed {
     u64 rs2;
     u64 imm;
     logic isWriteBack;
-    logic isMemWrite;
     u5  wd;
     u3  aluOp;
     logic  isBranch;
@@ -264,6 +263,10 @@ typedef struct packed {
 
     u32 instr;
     u64 instrAddr;
+
+    logic isMemWrite;
+    logic isMemRead;
+    u4 memMode;
 } REG_ID_EX;
 
 typedef struct packed {
@@ -277,6 +280,10 @@ typedef struct packed {
 
     u32 instr;
     u64 instrAddr;
+
+    logic isMemWrite;
+    logic isMemRead;
+    u4 memMode;
 } REG_EX_MEM;
 
 typedef struct packed {
@@ -290,6 +297,8 @@ typedef struct packed {
 
     u32 instr;
     u64 instrAddr;
+
+    logic isMemRead;
 } REG_MEM_WB;
 
 typedef struct packed {

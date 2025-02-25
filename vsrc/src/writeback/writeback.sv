@@ -24,7 +24,7 @@ always_ff @(posedge clk or posedge rst) begin
                 wbData <= moduleIn.aluOut;
 
                 moduleOut.isWb <= 1;
-                moduleOut.wd <= wd;
+                moduleOut.wd <= moduleIn.wd;
                 moduleOut.wdData <= wbData;
                 moduleOut.instrAddr <= moduleIn.instrAddr;
                 moduleOut.instr <= moduleIn.instr;

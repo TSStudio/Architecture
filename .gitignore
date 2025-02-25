@@ -6,3 +6,4 @@ difftest/*
 *.out
 .gdb_history
 .vscode/
+*.zip

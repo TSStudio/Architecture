@@ -3,31 +3,10 @@
 `include "src/decode/maindecoder.sv"
 `endif
 
-/*
-typedef struct packed {
-    logic  valid;
-    u64 pcPlus4;
-    u32 instr;
-} REG_IF_ID;
-
-typedef struct packed {
-    logic  valid;
-    u64 pcPlus4;
-    u64 rs1;
-    logic srcB;
-    u64 rs2;
-    u64 imm;
-    logic isWriteBack;
-    logic isMemWrite;
-    u5  wd;
-    u3  aluOp;
-    logic  isBranch;
-} REG_ID_EX;
-*/
-
 module decoder import common::*;(
     input logic clk,rst,
     input logic bubbleHold,
+    output logic lwHold,
     input REG_IF_ID moduleIn,
     output REG_ID_EX moduleOut,
 
@@ -37,19 +16,14 @@ module decoder import common::*;(
     input FORWARD_SOURCE fwdSrc1, fwdSrc2
 );
 
-/*
-typedef struct packed {
-    logic valid;
-    logic isWb;
-    u5  wd;
-    u64 wdData;
-} FORWARD_SOURCE;
-*/
 u64 imm;
 u5 wd;
 u3 aluOp;
-logic isBranch, isWriteBack, srcB, isMemWrite;
+logic isBranch, isWriteBack, srcB, isMemWrite, isMemRead;
+u4 memMode;
 logic rv64;
+
+assign lwHold = isMemRead;
 
 maindecoder maindecoder_inst(
     .instr(moduleIn.instr),
@@ -62,7 +36,9 @@ maindecoder maindecoder_inst(
     .isWriteBack(isWriteBack),
     .srcB(srcB),
     .isMemWrite(isMemWrite),
-    .rv64(rv64)
+    .isMemRead(isMemRead),
+    .rv64(rv64),
+    .memMode(memMode)
 );
 
 u64 rs1DataOutS1, rs1DataOutS2, rs2DataOutS1, rs2DataOutS2;
@@ -73,7 +49,7 @@ assign rs1DataOutS2 = fwdSrc2.valid & fwdSrc2.isWb & fwdSrc2.wd == rs1 ? fwdSrc2
 assign rs2DataOutS1 = fwdSrc1.valid & fwdSrc1.isWb & fwdSrc1.wd == rs2 ? fwdSrc1.wdData : rs2Data;
 assign rs2DataOutS2 = fwdSrc2.valid & fwdSrc2.isWb & fwdSrc2.wd == rs2 ? fwdSrc2.wdData : rs2DataOutS1;
 
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge (clk & ~bubbleHold) or posedge rst) begin
     if(rst) begin
         moduleOut.valid <= 0;
     end else begin
@@ -86,7 +62,9 @@ always_ff @(posedge clk or posedge rst) begin
 
         moduleOut.imm <= imm;
         moduleOut.isWriteBack <= isWriteBack;
+        moduleOut.isMemRead <= isMemRead;
         moduleOut.isMemWrite <= isMemWrite;
+        moduleOut.memMode <= memMode;
         moduleOut.wd <= wd;
         moduleOut.aluOp <= aluOp;
         moduleOut.isBranch <= isBranch;

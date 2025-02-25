@@ -41,17 +41,21 @@ assign forwardSource.isWb = moduleIn.isWriteBack;
 assign forwardSource.wd = moduleIn.wd;
 assign forwardSource.wdData = aluOutProc;
 
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge (clk & ~bubbleHold) or posedge rst) begin
     if(rst) begin
         moduleOut.valid <= 0;
     end else begin
-        moduleOut.valid <= moduleIn.valid & ~bubbleHold;
+        moduleOut.valid <= moduleIn.valid ;
         moduleOut.rs2 <= moduleIn.rs2;
         moduleOut.aluOut <= aluOutProc;
         moduleOut.isWriteBack <= moduleIn.isWriteBack;
         moduleOut.wd <= moduleIn.wd;
         moduleOut.isBranch <= moduleIn.isBranch;
         moduleOut.pcBranch <= pcBranch;
+
+        moduleOut.isMemRead <= moduleIn.isMemRead;
+        moduleOut.isMemWrite <= moduleIn.isMemWrite;
+        moduleOut.memMode <= moduleIn.memMode;
 
         moduleOut.instrAddr <= moduleIn.instrAddr;
         moduleOut.instr <= moduleIn.instr;

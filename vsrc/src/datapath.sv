@@ -12,6 +12,8 @@ module datapath import common::*;(
     input logic clk,rst,
     output ibus_req_t  ireq,
 	input  ibus_resp_t iresp,
+    output dbus_req_t dreq,
+    input  dbus_resp_t dresp,
     output WB_COMMIT wb_commit,
     output u64 regs [31:0]
 );
@@ -26,6 +28,9 @@ FORWARD_SOURCE fwd_EX_EX, fwd_MEM_EX;
 u5 rs1,rs2,wd;
 u64 rs1Data,rs2Data,wdData;
 logic wbEn;
+
+logic bubbleHold;
+logic lwHold;
 
 regfile regfile_inst(
     .clk(clk),
@@ -45,7 +50,8 @@ programCounter pc_inst(
     .rst(rst),
     .pcIn(64'b0),//todo
     .pcInEn(0),//todo
-    .bubbleHold(0),//todo
+    .bubbleHold(bubbleHold),
+    .lwHold(0),
     .moduleOut(if_id),
     .ibus_resp(iresp),
     .ibus_req(ireq)
@@ -54,7 +60,8 @@ programCounter pc_inst(
 decoder decoder_inst(
     .clk(clk),
     .rst(rst),
-    .bubbleHold(0),//todo
+    .bubbleHold(bubbleHold),
+    .lwHold(lwHold),
     .moduleIn(if_id),
     .moduleOut(id_ex),
     .rs1(rs1),
@@ -68,7 +75,7 @@ decoder decoder_inst(
 execute execute_inst(
     .clk(clk),
     .rst(rst),
-    .bubbleHold(0),//todo
+    .bubbleHold(bubbleHold),
     .moduleIn(id_ex),
     .moduleOut(ex_mem),
     .forwardSource(fwd_EX_EX)
@@ -77,10 +84,12 @@ execute execute_inst(
 memory memory_inst(
     .clk(clk),
     .rst(rst),
-    .bubbleHold(0),//todo
+    .bubbleHold(bubbleHold),
     .moduleIn(ex_mem),
     .moduleOut(mem_wb),
-    .forwardSource(fwd_MEM_EX)
+    .forwardSource(fwd_MEM_EX),
+    .dreq(dreq),
+    .dresp(dresp)
 );
 
 writeback writeback_inst(
@@ -91,7 +100,6 @@ writeback writeback_inst(
     .wd(wd),
     .wbData(wdData),
     .moduleOut(wb_commit)
-    
 );
 
 

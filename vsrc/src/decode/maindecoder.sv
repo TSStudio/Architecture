@@ -9,12 +9,11 @@ module maindecoder import common::*;(
     output u5 rs1, rs2, wd,
     output u3 aluOp,
     output logic rv64,
-    output logic isBranch, isWriteBack, srcB, isMemWrite
+    output logic isBranch, isWriteBack, srcB, isMemWrite, isMemRead,
+    output u4 memMode
 );
 
-assign isBranch    =  0; // todo
-//assign isWriteBack =  1; // todo
-assign isMemWrite  =  0; // todo
+assign isBranch    =  0; // todo lab3
 
 
 u2 immtype; // I:00 S:01 B:10 J:11
@@ -39,12 +38,20 @@ assign optype =
                 (instr[6:0]==7'b1100111)? 3'b110: // J-type
 
                 (instr[6:0]==7'b0011011)? 3'b001: // 64-bit I-type 
-                (instr[6:0]==7'b0111011)? 3'b000: // 64-bit R-type 
+                (instr[6:0]==7'b0111011)? 3'b000: // 64-bit R-type
                 3'b111; // Unknown
 
-assign isWriteBack = ((instr[6:0]==7'b0000000) | (optype==3'b111) ) ? 0 : 1; // todo lab2
+assign isWriteBack = ((instr[6:0]==7'b0000011) | (instr[6:0]==7'b0010011) | (instr[6:0]==7'b0110011) | (instr[6:0]==7'b0111011) | (instr[6:0]==7'b0011011)) ; // todo lab3
 
 assign rv64 = (instr[6:0]==7'b0111011 || instr[6:0]==7'b0011011)? 1:0;
+
+assign isMemWrite = (instr[6:0]==7'b0100011)? 1:0;
+
+assign isMemRead = (instr[6:0]==7'b0000011)? 1:0;
+
+assign memMode[2:0] = funct3;
+assign memMode[3]=isMemWrite;
+
 
 /*
 module signextend(

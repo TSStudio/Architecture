@@ -14,7 +14,6 @@ module core import common::*;(
 	input  dbus_resp_t dresp,
 	input  logic       trint, swint, exint
 );
-	/* TODO: Add your CPU-Core here. */
 
 WB_COMMIT wb_commit;
 u64 regs[31:0];
@@ -23,6 +22,8 @@ datapath datapath_inst(
 	.rst(reset),
 	.ireq(ireq),
 	.iresp(iresp),
+	.dreq(dreq),
+	.dresp(dresp),
 	.wb_commit(wb_commit),
 	.regs(regs)
 );

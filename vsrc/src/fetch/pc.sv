@@ -7,6 +7,7 @@ module programCounter import common::*;(
     input u64 pcIn,
     input logic pcInEn,
     input logic bubbleHold,
+    input logic lwHold,
     output REG_IF_ID moduleOut,
 
     input ibus_resp_t ibus_resp,
@@ -17,7 +18,7 @@ u64 curPC;
 u64 nextPC;
 
 logic hold;
-assign hold = bubbleHold | (~(ibus_resp.addr_ok&ibus_resp.data_ok));
+assign hold = bubbleHold | lwHold | (~(ibus_resp.addr_ok&ibus_resp.data_ok));
 logic curPCSent;
 
 initial begin
