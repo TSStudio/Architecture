@@ -47,6 +47,8 @@ assign isWriteBack = ((instr[6:0]==7'b0000011) | (instr[6:0]==7'b0010011) | (ins
 
 assign rv64 = (instr[6:0]==7'b0111011 | instr[6:0]==7'b0011011)? 1:0;
 
+assign rvm = ((instr[6:0]==7'b0110011 & funct7 == 7'b0000001) | (instr[6:0]==7'b0111011 & funct7 == 7'b0000001)) ? 1:0;
+
 assign isMemWrite = (instr[6:0]==7'b0100011)? 1:0;
 
 assign isMemRead = (instr[6:0]==7'b0000011)? 1:0;
@@ -127,5 +129,44 @@ assign aluOp = (optype==3'b000)?// R-type
                     (3'b000)
                 : 3'b111;
 
+
+//mul ops:
+// 0000: mul
+// 0100: div
+// 0101: divu
+// 0110: rem
+// 0111: remu
+// 1000: mulw
+// 1100: divw
+// 1101: divuw
+// 1110: remw
+// 1111: remuw
+
+assign mulOp =  (instr[6:0]==7'b0110011)?(
+                    (funct3==3'b000)?
+                        4'b0000 // mul
+                    : (funct3==3'b100)?
+                        4'b0100 // div
+                    : (funct3==3'b101)?
+                        4'b0101 // divu
+                    : (funct3==3'b110)?
+                        4'b0110 // rem
+                    : (funct3==3'b111)?
+                        4'b0111 // remu
+                    : 4'b0000
+                ): (instr[6:0]==7'b0111011)?(
+                    (funct3==3'b000)?
+                        4'b1000 // mulw
+                    : (funct3==3'b100)?
+                        4'b1100 // divw
+                    : (funct3==3'b101)?
+                        4'b1101 // divuw
+                    : (funct3==3'b110)?
+                        4'b1110 // remw
+                    : (funct3==3'b111)?
+                        4'b1111 // remuw
+                    : 4'b0000
+                ): 4'b0000;
+                    
 
 endmodule

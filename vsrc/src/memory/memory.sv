@@ -17,17 +17,15 @@ module memory import common::*;(
     input logic ok_to_proceed_overall
 );
 
-logic mem_ok;
-logic mem_op_done;
+logic cur_mem_op_done;
+logic cur_mem_op_started;
+logic new_instr;
 
-assign mem_ok = dresp.addr_ok & dresp.data_ok;
-
-
-assign ok_to_proceed = ~(moduleIn.valid) | ~(moduleIn.isMemRead|moduleIn.isMemWrite) | mem_op_done;
+assign ok_to_proceed = ~(moduleIn.valid) | ~(moduleIn.isMemRead|moduleIn.isMemWrite) | cur_mem_op_done;
 
 initial begin
     moduleOut.valid = 0;
-    mem_op_done = 0;
+    cur_mem_op_done = 0;
 end
 
 assign forwardSource.valid = moduleIn.valid & moduleIn.wd != 0;
@@ -51,24 +49,23 @@ memoryHelper memoryHelper_inst(
 );
 
 memorySolver memorySolver_inst(
-    .addressReq(addrReq),
+    .addressReq(moduleIn.aluOut),
     .dataIn(dresp.data),
-    .memMode(memMode),
+    .memMode(moduleIn.memMode),
     .data(dataOut)
 );
 
-u4 memMode;
-u64 addrReq;
 u64 dataOut;
 
 always_ff @(negedge clk) begin
-    if(moduleIn.valid & (moduleIn.isMemRead|moduleIn.isMemWrite) ) begin
-        mem_op_done <= 0;
+    if(new_instr) begin
+        cur_mem_op_done <= 0;
+    end
+    if(moduleIn.valid & (moduleIn.isMemRead|moduleIn.isMemWrite) & new_instr) begin
+        cur_mem_op_started <= 1;
         dreq.addr <= addr;
         dreq.valid <= 1;
         dreq.size <= msize;
-        memMode <= moduleIn.memMode;
-        addrReq <= moduleIn.aluOut;
         if(moduleIn.isMemRead) begin
             dreq.strobe <= 0;
         end else begin
@@ -76,8 +73,8 @@ always_ff @(negedge clk) begin
             dreq.data <= data;
         end
     end
-    if(mem_ok) begin
-        mem_op_done <= 1;
+    if(dresp.addr_ok & dresp.data_ok) begin
+        cur_mem_op_done <= 1;
     end
 end
 
@@ -94,6 +91,10 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.memOut <= dataOut;
         moduleOut.instrAddr <= moduleIn.instrAddr;
         moduleOut.instr <= moduleIn.instr;
+        new_instr <= 1;
+    end
+    if(cur_mem_op_started) begin 
+        new_instr <= 0;
     end
 end
 
