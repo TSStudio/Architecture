@@ -29,8 +29,13 @@ u5 rs1,rs2,wd;
 u64 rs1Data,rs2Data,wdData;
 logic wbEn;
 
-logic bubbleHold;
 logic lwHold;
+
+logic o2p_fetch, o2p_decode, o2p_execute, o2p_memory, o2p_writeback;
+
+logic o2p;
+
+assign o2p = o2p_fetch & o2p_decode & o2p_execute & o2p_memory & o2p_writeback;
 
 regfile regfile_inst(
     .clk(clk),
@@ -50,17 +55,17 @@ programCounter pc_inst(
     .rst(rst),
     .pcIn(64'b0),//todo
     .pcInEn(0),//todo
-    .bubbleHold(bubbleHold),
     .lwHold(0),
     .moduleOut(if_id),
     .ibus_resp(iresp),
-    .ibus_req(ireq)
+    .ibus_req(ireq),
+    .ok_to_proceed(o2p_fetch),
+    .ok_to_proceed_overall(o2p)
 );
 
 decoder decoder_inst(
     .clk(clk),
     .rst(rst),
-    .bubbleHold(bubbleHold),
     .lwHold(lwHold),
     .moduleIn(if_id),
     .moduleOut(id_ex),
@@ -69,27 +74,31 @@ decoder decoder_inst(
     .rs1Data(rs1Data),
     .rs2Data(rs2Data),
     .fwdSrc1(fwd_MEM_EX),
-    .fwdSrc2(fwd_EX_EX)
+    .fwdSrc2(fwd_EX_EX),
+    .ok_to_proceed(o2p_decode),
+    .ok_to_proceed_overall(o2p)
 );
 
 execute execute_inst(
     .clk(clk),
     .rst(rst),
-    .bubbleHold(bubbleHold),
     .moduleIn(id_ex),
     .moduleOut(ex_mem),
-    .forwardSource(fwd_EX_EX)
+    .forwardSource(fwd_EX_EX),
+    .ok_to_proceed(o2p_execute),
+    .ok_to_proceed_overall(o2p)
 );
 
 memory memory_inst(
     .clk(clk),
     .rst(rst),
-    .bubbleHold(bubbleHold),
     .moduleIn(ex_mem),
     .moduleOut(mem_wb),
     .forwardSource(fwd_MEM_EX),
     .dreq(dreq),
-    .dresp(dresp)
+    .dresp(dresp),
+    .ok_to_proceed(o2p_memory),
+    .ok_to_proceed_overall(o2p)
 );
 
 writeback writeback_inst(
@@ -99,7 +108,9 @@ writeback writeback_inst(
     .wbEn(wbEn),
     .wd(wd),
     .wbData(wdData),
-    .moduleOut(wb_commit)
+    .moduleOut(wb_commit),
+    .ok_to_proceed(o2p_writeback),
+    .ok_to_proceed_overall(o2p)
 );
 
 

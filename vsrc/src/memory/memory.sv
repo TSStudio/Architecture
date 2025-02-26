@@ -6,28 +6,31 @@
 
 module memory import common::*;(
     input logic clk,rst,
-    output logic bubbleHold,
     input REG_EX_MEM moduleIn,
     output REG_MEM_WB moduleOut,
     output FORWARD_SOURCE forwardSource,
 
-    
     output dbus_req_t dreq,
-    input  dbus_resp_t dresp
+    input  dbus_resp_t dresp,
+
+    output logic ok_to_proceed,
+    input logic ok_to_proceed_overall
 );
 
-logic busy;
 logic mem_ok;
+logic mem_op_done;
 
-assign bubbleHold = busy;
 assign mem_ok = dresp.addr_ok & dresp.data_ok;
+
+
+assign ok_to_proceed = ~(moduleIn.valid) | ~(moduleIn.isMemRead|moduleIn.isMemWrite) | mem_op_done;
 
 initial begin
     moduleOut.valid = 0;
-    busy = 0;
+    mem_op_done = 0;
 end
 
-assign forwardSource.valid = moduleIn.valid;
+assign forwardSource.valid = moduleIn.valid & moduleIn.wd != 0;
 assign forwardSource.isWb = moduleIn.isWriteBack;
 assign forwardSource.wd = moduleIn.wd;
 assign forwardSource.wdData = moduleIn.isMemRead ? dataOut:moduleIn.aluOut;
@@ -59,8 +62,8 @@ u64 addrReq;
 u64 dataOut;
 
 always_ff @(negedge clk) begin
-    if(moduleIn.valid & (moduleIn.isMemRead|moduleIn.isMemWrite) & ~busy) begin
-        busy <= 1;
+    if(moduleIn.valid & (moduleIn.isMemRead|moduleIn.isMemWrite) ) begin
+        mem_op_done <= 0;
         dreq.addr <= addr;
         dreq.valid <= 1;
         dreq.size <= msize;
@@ -74,17 +77,15 @@ always_ff @(negedge clk) begin
         end
     end
     if(mem_ok) begin
-        busy <= 0;
+        mem_op_done <= 1;
     end
-
-
 end
 
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         moduleOut.valid <= 0;
-    end else begin
-        moduleOut.valid <= moduleIn.valid & ~bubbleHold;
+    end else if(ok_to_proceed_overall) begin
+        moduleOut.valid <= moduleIn.valid;
         moduleOut.aluOut <= moduleIn.aluOut;
         moduleOut.isWriteBack <= moduleIn.isWriteBack;
         moduleOut.wd <= moduleIn.wd;

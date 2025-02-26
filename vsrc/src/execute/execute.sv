@@ -6,10 +6,12 @@
 
 module execute import common::*;(
     input logic clk,rst,
-    input logic bubbleHold,
     input REG_ID_EX moduleIn,
     output REG_EX_MEM moduleOut,
-    output FORWARD_SOURCE forwardSource
+    output FORWARD_SOURCE forwardSource,
+
+    output logic ok_to_proceed,
+    input logic ok_to_proceed_overall
 );
 
 u64 ib;
@@ -49,16 +51,18 @@ u64 aluOutProc;
 
 assign aluOutProc = moduleIn.rv64 ? {{32{datUse[31]}}, datUse[31:0]}: datUse;
 
-assign forwardSource.valid = moduleIn.valid;
+assign forwardSource.valid = moduleIn.valid & moduleIn.wd != 0;
 assign forwardSource.isWb = moduleIn.isWriteBack;
 assign forwardSource.wd = moduleIn.wd;
 assign forwardSource.wdData = aluOutProc;
 
-always_ff @(posedge (clk & ~bubbleHold) or posedge rst) begin
+assign ok_to_proceed = 1; // always proceed, todo if multiply cannot complete in one cycle
+
+always_ff @(posedge clk  or posedge rst) begin
     if(rst) begin
         moduleOut.valid <= 0;
-    end else begin
-        moduleOut.valid <= moduleIn.valid ;
+    end else if(ok_to_proceed_overall) begin
+        moduleOut.valid <= moduleIn.valid;
         moduleOut.rs2 <= moduleIn.rs2;
         moduleOut.aluOut <= aluOutProc;
         moduleOut.isWriteBack <= moduleIn.isWriteBack;

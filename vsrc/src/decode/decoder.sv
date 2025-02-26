@@ -5,7 +5,6 @@
 
 module decoder import common::*;(
     input logic clk,rst,
-    input logic bubbleHold,
     output logic lwHold,
     input REG_IF_ID moduleIn,
     output REG_ID_EX moduleOut,
@@ -13,7 +12,10 @@ module decoder import common::*;(
     output u5 rs1, rs2,
     input u64 rs1Data, rs2Data,
 
-    input FORWARD_SOURCE fwdSrc1, fwdSrc2
+    input FORWARD_SOURCE fwdSrc1, fwdSrc2,
+
+    output logic ok_to_proceed,
+    input logic ok_to_proceed_overall
 );
 
 u64 imm;
@@ -53,11 +55,13 @@ assign rs1DataOutS2 = fwdSrc2.valid & fwdSrc2.isWb & fwdSrc2.wd == rs1 ? fwdSrc2
 assign rs2DataOutS1 = fwdSrc1.valid & fwdSrc1.isWb & fwdSrc1.wd == rs2 ? fwdSrc1.wdData : rs2Data;
 assign rs2DataOutS2 = fwdSrc2.valid & fwdSrc2.isWb & fwdSrc2.wd == rs2 ? fwdSrc2.wdData : rs2DataOutS1;
 
-always_ff @(posedge (clk & ~bubbleHold) or posedge rst) begin
+assign ok_to_proceed = 1; // always proceed
+
+always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         moduleOut.valid <= 0;
-    end else begin
-        moduleOut.valid <= moduleIn.valid & ~bubbleHold;
+    end else if(ok_to_proceed_overall) begin
+        moduleOut.valid <= moduleIn.valid;
         moduleOut.pcPlus4 <= moduleIn.pcPlus4;
         moduleOut.srcB <= srcB;
 
