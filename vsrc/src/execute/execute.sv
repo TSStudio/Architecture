@@ -1,6 +1,7 @@
 `ifdef VERILATOR
 `include "include/common.sv"
 `include "src/execute/alu.sv"
+`include "src/execute/mul.sv"
 `endif
 
 module execute import common::*;(
@@ -16,6 +17,7 @@ u64 ib;
 assign ib=moduleIn.srcB?moduleIn.imm:moduleIn.rs2;
 
 u64 aluOut;
+u64 mulOut;
 u64 pcBranch;
 
 assign pcBranch=moduleIn.pcPlus4+(moduleIn.imm<<2);
@@ -28,13 +30,24 @@ alu alu(
     .aluOut(aluOut)
 );
 
+mul mul(
+    .clk(clk),
+    .ia(moduleIn.rs1),
+    .ib(ib),
+    .mulOp(moduleIn.mulOp),
+    .mulOut(mulOut)
+);
+
 initial begin
     moduleOut.valid = 0;
 end
 
+u64 datUse;
+assign datUse = moduleIn.rvm ? mulOut : aluOut;
+
 u64 aluOutProc;
 
-assign aluOutProc = moduleIn.rv64 ? {{32{aluOut[31]}}, aluOut[31:0]}: aluOut;
+assign aluOutProc = moduleIn.rv64 ? {{32{datUse[31]}}, datUse[31:0]}: datUse;
 
 assign forwardSource.valid = moduleIn.valid;
 assign forwardSource.isWb = moduleIn.isWriteBack;

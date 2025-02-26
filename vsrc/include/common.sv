@@ -249,17 +249,19 @@ typedef struct packed {
 } REG_IF_ID;
 
 typedef struct packed {
-    logic  valid;
+    logic valid;
     u64 pcPlus4;
     u64 rs1;
     logic srcB;
     u64 rs2;
     u64 imm;
     logic isWriteBack;
-    u5  wd;
-    u3  aluOp;
-    logic  isBranch;
+    u5 wd;
+    u3 aluOp;
+    u4 mulOp;
+    logic isBranch;
     logic rv64;
+    logic rvm;
 
     u32 instr;
     u64 instrAddr;
@@ -270,12 +272,12 @@ typedef struct packed {
 } REG_ID_EX;
 
 typedef struct packed {
-    logic  valid;
+    logic valid;
     u64 rs2;
     u64 aluOut;
     logic isWriteBack;
-    u5  wd;
-    logic  isBranch;
+    u5 wd;
+    logic isBranch;
     u64 pcBranch;
 
     u32 instr;

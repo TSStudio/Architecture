@@ -22,6 +22,8 @@ u3 aluOp;
 logic isBranch, isWriteBack, srcB, isMemWrite, isMemRead;
 u4 memMode;
 logic rv64;
+logic rvm;
+u4 mulOp;
 
 assign lwHold = isMemRead;
 
@@ -32,13 +34,15 @@ maindecoder maindecoder_inst(
     .rs2(rs2),
     .wd(wd),
     .aluOp(aluOp),
+    .mulOp(mulOp),
     .isBranch(isBranch),
     .isWriteBack(isWriteBack),
     .srcB(srcB),
     .isMemWrite(isMemWrite),
     .isMemRead(isMemRead),
     .rv64(rv64),
-    .memMode(memMode)
+    .memMode(memMode),
+    .rvm(rvm)
 );
 
 u64 rs1DataOutS1, rs1DataOutS2, rs2DataOutS1, rs2DataOutS2;
@@ -67,8 +71,10 @@ always_ff @(posedge (clk & ~bubbleHold) or posedge rst) begin
         moduleOut.memMode <= memMode;
         moduleOut.wd <= wd;
         moduleOut.aluOp <= aluOp;
+        moduleOut.mulOp <= mulOp;
         moduleOut.isBranch <= isBranch;
         moduleOut.rv64 <= rv64;
+        moduleOut.rvm <= rvm;
 
         moduleOut.instrAddr <= moduleIn.instrAddr;
         moduleOut.instr <= moduleIn.instr;

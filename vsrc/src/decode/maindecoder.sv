@@ -8,9 +8,11 @@ module maindecoder import common::*;(
     output u64 imm,
     output u5 rs1, rs2, wd,
     output u3 aluOp,
+    output u4 mulOp,
     output logic rv64,
     output logic isBranch, isWriteBack, srcB, isMemWrite, isMemRead,
-    output u4 memMode
+    output u4 memMode,
+    output logic rvm
 );
 
 assign isBranch    =  0; // todo lab3
@@ -43,7 +45,7 @@ assign optype =
 
 assign isWriteBack = ((instr[6:0]==7'b0000011) | (instr[6:0]==7'b0010011) | (instr[6:0]==7'b0110011) | (instr[6:0]==7'b0111011) | (instr[6:0]==7'b0011011)) ; // todo lab3
 
-assign rv64 = (instr[6:0]==7'b0111011 || instr[6:0]==7'b0011011)? 1:0;
+assign rv64 = (instr[6:0]==7'b0111011 | instr[6:0]==7'b0011011)? 1:0;
 
 assign isMemWrite = (instr[6:0]==7'b0100011)? 1:0;
 
