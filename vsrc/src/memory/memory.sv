@@ -18,8 +18,8 @@ module memory import common::*;(
 );
 
 logic cur_mem_op_done;
+u64 cur_mem_data;
 logic cur_mem_op_started;
-logic new_instr;
 
 assign ok_to_proceed = ~(moduleIn.valid) | ~(moduleIn.isMemRead|moduleIn.isMemWrite) | cur_mem_op_done;
 
@@ -50,33 +50,12 @@ memoryHelper memoryHelper_inst(
 
 memorySolver memorySolver_inst(
     .addressReq(moduleIn.aluOut),
-    .dataIn(dresp.data),
+    .dataIn(cur_mem_data),
     .memMode(moduleIn.memMode),
     .data(dataOut)
 );
 
 u64 dataOut;
-
-always_ff @(negedge clk) begin
-    if(new_instr) begin
-        cur_mem_op_done <= 0;
-    end
-    if(moduleIn.valid & (moduleIn.isMemRead|moduleIn.isMemWrite) & new_instr) begin
-        cur_mem_op_started <= 1;
-        dreq.addr <= addr;
-        dreq.valid <= 1;
-        dreq.size <= msize;
-        if(moduleIn.isMemRead) begin
-            dreq.strobe <= 0;
-        end else begin
-            dreq.strobe <= strobe;
-            dreq.data <= data;
-        end
-    end
-    if(dresp.addr_ok & dresp.data_ok) begin
-        cur_mem_op_done <= 1;
-    end
-end
 
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
@@ -91,10 +70,26 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.memOut <= dataOut;
         moduleOut.instrAddr <= moduleIn.instrAddr;
         moduleOut.instr <= moduleIn.instr;
-        new_instr <= 1;
+
+        cur_mem_op_done <= 0;
+        cur_mem_op_started <= 0;
     end
-    if(cur_mem_op_started) begin 
-        new_instr <= 0;
+    if(dresp.addr_ok & dresp.data_ok & cur_mem_op_started) begin
+        cur_mem_data <= dresp.data;
+        cur_mem_op_done <= 1;
+        dreq.valid <= 0;
+    end
+    if(moduleIn.valid & (moduleIn.isMemRead|moduleIn.isMemWrite) & ~cur_mem_op_started) begin
+        cur_mem_op_started <= 1;
+        dreq.addr <= addr;
+        dreq.valid <= 1;
+        dreq.size <= msize;
+        if(moduleIn.isMemRead) begin
+            dreq.strobe <= 0;
+        end else begin
+            dreq.strobe <= strobe;
+            dreq.data <= data;
+        end
     end
 end
 
