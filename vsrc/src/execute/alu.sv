@@ -11,7 +11,7 @@ module alu import common::*;(
 
 // alu operations
 
-always_ff @(negedge clk) begin
+always_comb begin
     case(aluOp)
         3'b000: aluOut = ia + ib;
         3'b001: aluOut = ia - ib;
