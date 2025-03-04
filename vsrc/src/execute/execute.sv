@@ -14,9 +14,16 @@ module execute import common::*;(
     input logic ok_to_proceed_overall
 );
 
-u64 ib;
+u64 ia,ib;
 
-assign ib=moduleIn.srcB?moduleIn.imm:moduleIn.rs2;
+assign ia=moduleIn.srcA==2'b00 ? 64'b0:
+            moduleIn.srcA==2'b01 ? moduleIn.rs1:
+            0;
+
+assign ib=moduleIn.srcB==2'b00 ? moduleIn.rs2:
+            moduleIn.srcB==2'b01 ? moduleIn.imm:
+            moduleIn.srcB==2'b10 ? (moduleIn.imm<<12):
+            0;
 
 u64 aluOut;
 u64 mulOut;
@@ -26,7 +33,7 @@ assign pcBranch=moduleIn.pcPlus4+(moduleIn.imm<<2);
 
 alu alu(
     .clk(clk),
-    .ia(moduleIn.rs1),
+    .ia(ia),
     .ib(ib),
     .aluOp(moduleIn.aluOp),
     .aluOut(aluOut)
@@ -34,7 +41,7 @@ alu alu(
 
 mul mul(
     .clk(clk),
-    .ia(moduleIn.rs1),
+    .ia(ia),
     .ib(ib),
     .mulOp(moduleIn.mulOp),
     .mulOut(mulOut)

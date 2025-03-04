@@ -64,6 +64,7 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.valid <= moduleIn.valid;
         moduleOut.aluOut <= moduleIn.aluOut;
         moduleOut.isWriteBack <= moduleIn.isWriteBack;
+        moduleOut.isMemRead <= moduleIn.isMemRead;
         moduleOut.wd <= moduleIn.wd;
         moduleOut.isBranch <= moduleIn.isBranch;
         moduleOut.pcBranch <= moduleIn.pcBranch;

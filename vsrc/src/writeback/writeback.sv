@@ -14,9 +14,15 @@ module writeback import common::*;(
     input logic ok_to_proceed_overall
 );
 
-assign ok_to_proceed = 1; // always proceed
+assign ok_to_proceed = ok;
+
+logic ok;
 
 always_ff @(posedge clk or posedge rst) begin
+    if(ok==0) begin
+        ok <= 1;
+    end
+
     if(rst) begin
         // do nothing
     end else if(ok_to_proceed_overall) begin
@@ -37,8 +43,9 @@ always_ff @(posedge clk or posedge rst) begin
                 moduleOut.instr <= moduleIn.instr;
             end
         end
+        ok <= 0;
     end else begin
-        if(moduleIn.isWriteBack) begin
+        if(moduleIn.isWriteBack & moduleIn.valid) begin
             // write back
             wbEn <= 1;
             wd <= moduleIn.wd;

@@ -32,16 +32,22 @@ end
 
 always_ff @(posedge clk or posedge rst) begin
     if(ok_to_proceed_overall) begin
-        moduleOut.valid <= 1;
-        moduleOut.pcPlus4 <= curPC+4;
-        moduleOut.instr <= instr_n;
-        moduleOut.instrAddr <= curPC;
+        if(~lwHold) begin 
+            moduleOut.valid <= 1;
+            moduleOut.pcPlus4 <= curPC+4;
+            moduleOut.instr <= instr_n;
+            moduleOut.instrAddr <= curPC;
 
-        curPC <= nextPC;
-        ibus_req.addr <= nextPC;
-        ibus_req.valid <= 1;
-        ok_to_proceed <= 0;
-        nextPC <= nextPC + 4;
+            curPC <= nextPC;
+            ibus_req.addr <= nextPC;
+            ibus_req.valid <= 1;
+            ok_to_proceed <= 0;
+            nextPC <= nextPC + 4;
+        end else begin
+            moduleOut.valid <= 0;
+            ibus_req.valid <= 0;
+            ok_to_proceed <= 1;
+        end
 
     end
     if (ibus_resp.addr_ok & ibus_resp.data_ok) begin

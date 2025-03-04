@@ -10,7 +10,8 @@ module maindecoder import common::*;(
     output u3 aluOp,
     output u4 mulOp,
     output logic rv64,
-    output logic isBranch, isWriteBack, srcB, isMemWrite, isMemRead,
+    output u2 srcA,srcB,
+    output logic isBranch, isWriteBack, isMemWrite, isMemRead,
     output u4 memMode,
     output logic rvm
 );
@@ -18,17 +19,18 @@ module maindecoder import common::*;(
 assign isBranch    =  0; // todo lab3
 
 
-u2 immtype; // I:00 S:01 B:10 J:11
+u3 immtype; // I:00 S:01 B:10 J:11
 u3 optype;
 
 u3 funct3 = instr[14:12];
 u7 funct7 = instr[31:25];
 
 assign immtype =
-                (instr[6:0]==7'b0010011 || instr[6:0]==7'b0000011 || instr[6:0]==7'b0011011)? 2'b00:
-                (instr[6:0]==7'b0100011)? 2'b01:
-                (instr[6:0]==7'b1100011)? 2'b10:
-                2'b11;
+                (instr[6:0]==7'b0010011 || instr[6:0]==7'b0000011 || instr[6:0]==7'b0011011 )? 3'b000:
+                (instr[6:0]==7'b0100011)? 3'b001:
+                (instr[6:0]==7'b1100011)? 3'b010:
+                (instr[6:0]==7'b0110111)? 3'b100: // U-type
+                3'b011;
 
 assign optype =
                 (instr[6:0]==7'b0110011)? 3'b000: // R-type
@@ -43,7 +45,7 @@ assign optype =
                 (instr[6:0]==7'b0111011)? 3'b000: // 64-bit R-type
                 3'b111; // Unknown
 
-assign isWriteBack = ((instr[6:0]==7'b0000011) | (instr[6:0]==7'b0010011) | (instr[6:0]==7'b0110011) | (instr[6:0]==7'b0111011) | (instr[6:0]==7'b0011011)) ; // todo lab3
+assign isWriteBack = ((instr[6:0]==7'b0000011) | (instr[6:0]==7'b0010011) | (instr[6:0]==7'b0110011) | (instr[6:0]==7'b0111011) | (instr[6:0]==7'b0011011) | (instr[6:0]==7'b0110111)) ; // todo lab3
 
 assign rv64 = (instr[6:0]==7'b0111011 | instr[6:0]==7'b0011011)? 1:0;
 
@@ -54,7 +56,7 @@ assign isMemWrite = (instr[6:0]==7'b0100011)? 1:0;
 assign isMemRead = (instr[6:0]==7'b0000011)? 1:0;
 
 assign memMode[2:0] = funct3;
-assign memMode[3]=isMemWrite;
+assign memMode[3] = isMemWrite;
 
 
 /*
@@ -76,7 +78,9 @@ assign rs2 = instr[24:20];
 
 assign wd = instr[11:7];
 
-assign srcB = (immtype==2'b00)? 1:0;
+assign srcA = (instr[6:0]==7'b0110111)?2'b00:(2'b01);
+
+assign srcB = (immtype==3'b000 ||immtype==3'b100 || immtype==3'b001)? 2'b01:2'b00; // 00: rs2, 01: imm, 10: imm<<12 
 /*
         3'b000: aluOut = ia + ib;
         3'b001: aluOut = ia - ib;
@@ -127,7 +131,7 @@ assign aluOp = (optype==3'b000)?// R-type
                     (3'b000)
                 : (optype==3'b110)?
                     (3'b000)
-                : 3'b111;
+                : 3'b000;
 
 
 //mul ops:

@@ -55,7 +55,7 @@ programCounter pc_inst(
     .rst(rst),
     .pcIn(64'b0),//todo
     .pcInEn(0),//todo
-    .lwHold(0),
+    .lwHold(lwHold),
     .moduleOut(if_id),
     .ibus_resp(iresp),
     .ibus_req(ireq),

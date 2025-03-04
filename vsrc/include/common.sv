@@ -252,7 +252,8 @@ typedef struct packed {
     logic valid;
     u64 pcPlus4;
     u64 rs1;
-    logic srcB;
+    u2 srcA; // 00: 0, 01: rs1, 10: pc
+    u2 srcB; // 00: rs2, 01: imm, 10: imm<<12 
     u64 rs2;
     u64 imm;
     logic isWriteBack;

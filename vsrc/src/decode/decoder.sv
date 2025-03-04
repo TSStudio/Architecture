@@ -21,13 +21,14 @@ module decoder import common::*;(
 u64 imm;
 u5 wd;
 u3 aluOp;
-logic isBranch, isWriteBack, srcB, isMemWrite, isMemRead;
+u2 srcA,srcB;
+logic isBranch, isWriteBack, isMemWrite, isMemRead;
 u4 memMode;
 logic rv64;
 logic rvm;
 u4 mulOp;
 
-assign lwHold = isMemRead;
+assign lwHold = isMemRead & moduleIn.valid;
 
 maindecoder maindecoder_inst(
     .instr(moduleIn.instr),
@@ -39,6 +40,7 @@ maindecoder maindecoder_inst(
     .mulOp(mulOp),
     .isBranch(isBranch),
     .isWriteBack(isWriteBack),
+    .srcA(srcA),
     .srcB(srcB),
     .isMemWrite(isMemWrite),
     .isMemRead(isMemRead),
@@ -63,6 +65,8 @@ always_ff @(posedge clk or posedge rst) begin
     end else if(ok_to_proceed_overall) begin
         moduleOut.valid <= moduleIn.valid;
         moduleOut.pcPlus4 <= moduleIn.pcPlus4;
+
+        moduleOut.srcA <= srcA;
         moduleOut.srcB <= srcB;
 
         moduleOut.rs1 <= rs1DataOutS2;
