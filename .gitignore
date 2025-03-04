@@ -7,3 +7,4 @@ difftest/*
 .gdb_history
 .vscode/
 *.zip
+ready-to-run/
