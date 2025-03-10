@@ -166,7 +166,7 @@ parameter mlen_t AXI_BURST_LEN =AXI_BURST_NUM == 16 ? MLEN16 :
  *
  * strobe is used to mask out unused bytes in data, and
  * data are always assumed be placed at addresses aligned to
- * 4 bytes, no matter the lowest 2 bits of addr says.
+ * 8 bytes, no matter the lowest 3 bits of addr says.
  * for example, if you want to write one byte "0xcd" at 0x1f2,
  * the addr is "0x000001f2", but the data should be "0x00cd0000"
  * and the strobe should be "0b0100", rather than "0x000000cd"
