@@ -29,7 +29,7 @@ assign immtype =
                 (instr[6:0]==7'b0010011 || instr[6:0]==7'b0000011 || instr[6:0]==7'b0011011 )? 3'b000:
                 (instr[6:0]==7'b0100011)? 3'b001:
                 (instr[6:0]==7'b1100011)? 3'b010:
-                (instr[6:0]==7'b0110111)? 3'b100: // U-type
+                (instr[6:0]==7'b0110111 || instr[6:0]==7'b0010111)? 3'b100: // U-type
                 3'b011;
 
 assign optype =
@@ -45,7 +45,7 @@ assign optype =
                 (instr[6:0]==7'b0111011)? 3'b000: // 64-bit R-type
                 3'b111; // Unknown
 
-assign isWriteBack = ((instr[6:0]==7'b0000011) | (instr[6:0]==7'b0010011) | (instr[6:0]==7'b0110011) | (instr[6:0]==7'b0111011) | (instr[6:0]==7'b0011011) | (instr[6:0]==7'b0110111)) ; // todo lab3
+assign isWriteBack = ((instr[6:0]==7'b0000011) | (instr[6:0]==7'b0010011) | (instr[6:0]==7'b0110011) | (instr[6:0]==7'b0111011) | (instr[6:0]==7'b0011011) | (instr[6:0]==7'b0110111) | (instr[6:0]==7'b0010111)) ; // todo lab3
 
 assign rv64 = (instr[6:0]==7'b0111011 | instr[6:0]==7'b0011011)? 1:0;
 
@@ -78,7 +78,9 @@ assign rs2 = instr[24:20];
 
 assign wd = instr[11:7];
 
-assign srcA = (instr[6:0]==7'b0110111)?2'b00:(2'b01);
+assign srcA = (instr[6:0]==7'b0110111)?2'b00: //lui : 0
+              (instr[6:0]==7'b0010111)?2'b10: //auipc : pc
+              (2'b01); // rest: rs1
 
 assign srcB = (immtype==3'b000 ||immtype==3'b100 || immtype==3'b001)? 2'b01:2'b00; // 00: rs2, 01: imm, 10: imm<<12 
 /*

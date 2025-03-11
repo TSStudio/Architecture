@@ -243,6 +243,7 @@ typedef struct packed {
 typedef struct packed {
     logic  valid;
     u64 pcPlus4;
+    u64 pc;
     u32 instr;
 
     u64 instrAddr;
@@ -251,6 +252,7 @@ typedef struct packed {
 typedef struct packed {
     logic valid;
     u64 pcPlus4;
+    u64 pc;
     u64 rs1;
     u2 srcA; // 00: 0, 01: rs1, 10: pc
     u2 srcB; // 00: rs2, 01: imm, 10: imm<<12 

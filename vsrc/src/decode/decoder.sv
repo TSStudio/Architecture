@@ -64,6 +64,7 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.valid <= 0;
     end else if(ok_to_proceed_overall) begin
         moduleOut.valid <= moduleIn.valid;
+        moduleOut.pc <= moduleIn.pc;
         moduleOut.pcPlus4 <= moduleIn.pcPlus4;
 
         moduleOut.srcA <= srcA;

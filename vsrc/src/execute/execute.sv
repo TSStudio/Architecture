@@ -18,6 +18,8 @@ u64 ia,ib;
 
 assign ia=moduleIn.srcA==2'b00 ? 64'b0:
             moduleIn.srcA==2'b01 ? moduleIn.rs1:
+            moduleIn.srcA==2'b10 ? moduleIn.pc:
+            moduleIn.srcA==2'b11 ? moduleIn.pcPlus4:
             0;
 
 assign ib=moduleIn.srcB==2'b00 ? moduleIn.rs2:

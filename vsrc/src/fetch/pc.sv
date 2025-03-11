@@ -34,6 +34,7 @@ always_ff @(posedge clk or posedge rst) begin
     if(ok_to_proceed_overall) begin
         if(~lwHold) begin 
             moduleOut.valid <= 1;
+            moduleOut.pc <= curPC;
             moduleOut.pcPlus4 <= curPC+4;
             moduleOut.instr <= instr_n;
             moduleOut.instrAddr <= curPC;
