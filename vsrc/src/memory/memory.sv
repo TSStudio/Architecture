@@ -67,7 +67,8 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.isMemRead <= moduleIn.isMemRead;
         moduleOut.wd <= moduleIn.wd;
         moduleOut.isBranch <= moduleIn.isBranch;
-        moduleOut.pcBranch <= moduleIn.pcBranch;
+        moduleOut.isJump <= moduleIn.isJump;
+        moduleOut.branchAdopted <= moduleIn.flagResult;
         moduleOut.memOut <= dataOut;
         moduleOut.instrAddr <= moduleIn.instrAddr;
         moduleOut.instr <= moduleIn.instr;

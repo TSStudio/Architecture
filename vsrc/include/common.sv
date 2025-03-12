@@ -263,6 +263,7 @@ typedef struct packed {
     u3 aluOp;
     u4 mulOp;
     logic isBranch;
+    logic isJump;
     logic rv64;
     logic rvm;
 
@@ -285,9 +286,9 @@ typedef struct packed {
     logic isWriteBack;
     u5 wd;
     logic isBranch;
-    u64 pcBranch;
+    logic isJump;
 
-    u3 flags; //0->2 ia<ib ia<(u)ib ia=ib
+    logic flagResult;
 
     u32 instr;
     u64 instrAddr;
@@ -302,9 +303,12 @@ typedef struct packed {
     u64 aluOut;
     u5  wd;
     logic isWriteBack;
+    
     u64 memOut;
-    logic  isBranch;
-    u64 pcBranch;
+
+    logic isJump;
+    logic isBranch;
+    logic branchAdopted;
 
     u32 instr;
     u64 instrAddr;

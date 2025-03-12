@@ -37,6 +37,9 @@ logic o2p;
 
 assign o2p = o2p_fetch & o2p_decode & o2p_execute & o2p_memory & o2p_writeback;
 
+logic JumpEn;
+u64 JumpAddr;
+
 regfile regfile_inst(
     .clk(clk),
     .rst(rst),
@@ -53,14 +56,14 @@ regfile regfile_inst(
 programCounter pc_inst(
     .clk(clk),
     .rst(rst),
-    .pcIn(64'b0),//todo
-    .pcInEn(0),//todo
     .lwHold(lwHold),
     .moduleOut(if_id),
     .ibus_resp(iresp),
     .ibus_req(ireq),
     .ok_to_proceed(o2p_fetch),
-    .ok_to_proceed_overall(o2p)
+    .ok_to_proceed_overall(o2p),
+    .JumpEn(JumpEn),
+    .JumpAddr(JumpAddr)
 );
 
 decoder decoder_inst(
@@ -76,7 +79,8 @@ decoder decoder_inst(
     .fwdSrc1(fwd_MEM_EX),
     .fwdSrc2(fwd_EX_EX),
     .ok_to_proceed(o2p_decode),
-    .ok_to_proceed_overall(o2p)
+    .ok_to_proceed_overall(o2p),
+    .JumpEn(JumpEn)
 );
 
 execute execute_inst(
@@ -86,7 +90,8 @@ execute execute_inst(
     .moduleOut(ex_mem),
     .forwardSource(fwd_EX_EX),
     .ok_to_proceed(o2p_execute),
-    .ok_to_proceed_overall(o2p)
+    .ok_to_proceed_overall(o2p),
+    .JumpEn(JumpEn)
 );
 
 memory memory_inst(
@@ -110,7 +115,9 @@ writeback writeback_inst(
     .wbData(wdData),
     .moduleOut(wb_commit),
     .ok_to_proceed(o2p_writeback),
-    .ok_to_proceed_overall(o2p)
+    .ok_to_proceed_overall(o2p),
+    .JumpEn(JumpEn),
+    .JumpAddr(JumpAddr)
 );
 
 

@@ -4,8 +4,7 @@
 
 module programCounter import common::*;(
     input logic clk,rst,
-    input u64 pcIn,
-    input logic pcInEn,
+
     input logic lwHold,
     output REG_IF_ID moduleOut,
 
@@ -13,13 +12,18 @@ module programCounter import common::*;(
     output ibus_req_t ibus_req,
 
     output logic ok_to_proceed,
-    input logic ok_to_proceed_overall
+    input logic ok_to_proceed_overall,
+
+    input logic JumpEn,
+    input u64 JumpAddr
 );
 
 u64 curPC;
 u64 nextPC;
 
 u32 instr_n;
+
+logic instr_ok, jump_ok;
 
 initial begin
     curPC = PCINIT;
@@ -30,6 +34,7 @@ initial begin
     ok_to_proceed = 0;
 end
 
+assign ok_to_proceed = instr_ok & jump_ok;
 always_ff @(posedge clk or posedge rst) begin
     if(ok_to_proceed_overall) begin
         if(~lwHold) begin 
@@ -42,19 +47,32 @@ always_ff @(posedge clk or posedge rst) begin
             curPC <= nextPC;
             ibus_req.addr <= nextPC;
             ibus_req.valid <= 1;
-            ok_to_proceed <= 0;
+            instr_ok <= 0;
             nextPC <= nextPC + 4;
         end else begin
             moduleOut.valid <= 0;
             ibus_req.valid <= 0;
-            ok_to_proceed <= 1;
+            instr_ok <= 1;
+            jump_ok <= 1;
         end
 
     end
     if (ibus_resp.addr_ok & ibus_resp.data_ok) begin
-        ok_to_proceed <= 1;
+        instr_ok <= 1;
         instr_n <= ibus_resp.data;
         ibus_req.valid <= 0;
+    end
+    if (JumpEn) begin
+        curPC <= JumpAddr;
+        nextPC <= JumpAddr + 4;
+        if(~jump_ok&instr_ok) begin
+            instr_ok <= 0;
+            jump_ok <= 1;
+            ibus_req.addr <= JumpAddr;
+            ibus_req.valid <= 1;
+        end
+    end else begin
+        jump_ok <= 1;
     end
 end
 

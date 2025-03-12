@@ -11,7 +11,7 @@ module maindecoder import common::*;(
     output u4 mulOp,
     output logic rv64,
     output u2 srcA,srcB,
-    output logic isBranch, isWriteBack, isMemWrite, isMemRead,
+    output logic isBranch, isJump, isWriteBack, isMemWrite, isMemRead,
     output u4 memMode,
     output logic rvm,
 
@@ -19,7 +19,8 @@ module maindecoder import common::*;(
     output u2 useflag //use which flag
 );
 
-assign isBranch    =  0; // todo lab3
+assign isBranch    =  instr[6:0]==7'b1100011; // B-type
+assign isJump      =  instr[6:0]==7'b1100111 || instr[6:0]==7'b1101111; // J-type
 assign cns = (optype==3'b000 || optype==3'b001) && (funct3==3'b010 || funct3==3'b011); // slt sltu slti sltiu
 
 always_comb begin
@@ -30,9 +31,29 @@ always_comb begin
             useflag = 2'b01;
         end
         flagInv = 0;
-    end else begin //todo branch
-        useflag = 2'b00;
-        flagInv = 0;
+    end else begin
+        if(funct3==3'b000) begin //beq
+            useflag = 2'b10;
+            flagInv = 0;
+        end else if (funct3==3'b001) begin //bne
+            useflag = 2'b10;
+            flagInv = 1;
+        end else if (funct3==3'b100) begin //blt
+            useflag = 2'b00;
+            flagInv = 0;
+        end else if (funct3==3'b101) begin //bge
+            useflag = 2'b00;
+            flagInv = 1;
+        end else if (funct3==3'b110) begin //bltu
+            useflag = 2'b01;
+            flagInv = 0;
+        end else if (funct3==3'b111) begin //bgeu
+            useflag = 2'b01;
+            flagInv = 1;
+        end else begin
+            useflag = 2'b00;
+            flagInv = 0;
+        end
     end
 end
 
@@ -56,7 +77,7 @@ assign optype =
                 (instr[6:0]==7'b0000011)? 3'b010: // I-type
                 (instr[6:0]==7'b1100011)? 3'b011: // B-type
                 (instr[6:0]==7'b0100011)? 3'b100: // S-type
-                (instr[6:0]==7'b1101111)? 3'b101: // U-type
+                (instr[6:0]==7'b1101111)? 3'b101: // J-type
                 (instr[6:0]==7'b1100111)? 3'b110: // J-type
 
                 (instr[6:0]==7'b0011011)? 3'b001: // 64-bit I-type 
@@ -96,11 +117,12 @@ assign rs2 = instr[24:20];
 
 assign wd = instr[11:7];
 
-assign srcA = (instr[6:0]==7'b0110111)?2'b00: //lui : 0
-              (instr[6:0]==7'b0010111)?2'b10: //auipc : pc
+assign srcA = (instr[6:0]==7'b0110111)?2'b00: // lui : 0
+              (instr[6:0]==7'b0010111)?2'b10: // auipc : pc
+              (instr[6:0]==7'b1100011)?2'b10: // branch: pc
               (2'b01); // rest: rs1
 
-assign srcB = (immtype==3'b000 ||immtype==3'b100 || immtype==3'b001)? 2'b01:2'b00; // 00: rs2, 01: imm, 10: imm<<12 
+assign srcB = (immtype==3'b000 ||immtype==3'b100 || immtype==3'b001 || immtype==3'b011) ? 2'b01:2'b00; // 00: rs2, 01: imm, 10: imm<<12 
 /*
         3'b000: aluOut = ia + ib;
         3'b001: aluOut = ia - ib;

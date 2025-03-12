@@ -15,14 +15,16 @@ module decoder import common::*;(
     input FORWARD_SOURCE fwdSrc1, fwdSrc2,
 
     output logic ok_to_proceed,
-    input logic ok_to_proceed_overall
+    input logic ok_to_proceed_overall,
+
+    input logic JumpEn
 );
 
 u64 imm;
 u5 wd;
 u3 aluOp;
 u2 srcA,srcB;
-logic isBranch, isWriteBack, isMemWrite, isMemRead;
+logic isBranch, isWriteBack, isMemWrite, isMemRead, isJump;
 u4 memMode;
 logic rv64;
 logic rvm;
@@ -30,7 +32,7 @@ u4 mulOp;
 logic cns, flagInv;
 u2 useflag; //use which flag
 
-assign lwHold = isMemRead & moduleIn.valid;
+assign lwHold = (isBranch||isJump||isMemRead) & moduleIn.valid & ~JumpEn;
 
 maindecoder maindecoder_inst(
     .instr(moduleIn.instr),
@@ -41,6 +43,7 @@ maindecoder maindecoder_inst(
     .aluOp(aluOp),
     .mulOp(mulOp),
     .isBranch(isBranch),
+    .isJump(isJump),
     .isWriteBack(isWriteBack),
     .srcA(srcA),
     .srcB(srcB),
@@ -68,7 +71,7 @@ always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         moduleOut.valid <= 0;
     end else if(ok_to_proceed_overall) begin
-        moduleOut.valid <= moduleIn.valid;
+        moduleOut.valid <= moduleIn.valid & ~JumpEn;
         moduleOut.pc <= moduleIn.pc;
         moduleOut.pcPlus4 <= moduleIn.pcPlus4;
 
@@ -82,6 +85,8 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.isWriteBack <= isWriteBack;
         moduleOut.isMemRead <= isMemRead;
         moduleOut.isMemWrite <= isMemWrite;
+        moduleOut.isBranch <= isBranch;
+        moduleOut.isJump <= isJump;
         moduleOut.memMode <= memMode;
         moduleOut.wd <= wd;
         moduleOut.aluOp <= aluOp;

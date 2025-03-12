@@ -11,7 +11,9 @@ module execute import common::*;(
     output FORWARD_SOURCE forwardSource,
 
     output logic ok_to_proceed,
-    input logic ok_to_proceed_overall
+    input logic ok_to_proceed_overall,
+
+    input logic JumpEn
 );
 
 u64 ia,ib;
@@ -30,9 +32,6 @@ assign ib=moduleIn.srcB==2'b00 ? moduleIn.rs2:
 u64 aluOut;
 u32 aluOut32;
 u64 mulOut;
-u64 pcBranch;
-
-assign pcBranch=moduleIn.pcPlus4+(moduleIn.imm<<2);
 
 alu alu(
     .clk(clk),
@@ -110,13 +109,13 @@ always_ff @(posedge clk  or posedge rst) begin
     if(rst) begin
         moduleOut.valid <= 0;
     end else if(ok_to_proceed_overall) begin
-        moduleOut.valid <= moduleIn.valid;
+        moduleOut.valid <= moduleIn.valid & ~JumpEn;
         moduleOut.rs2 <= moduleIn.rs2;
         moduleOut.aluOut <= datUse;
         moduleOut.isWriteBack <= moduleIn.isWriteBack;
         moduleOut.wd <= moduleIn.wd;
         moduleOut.isBranch <= moduleIn.isBranch;
-        moduleOut.pcBranch <= pcBranch;
+        moduleOut.isJump <= moduleIn.isJump;
 
         moduleOut.isMemRead <= moduleIn.isMemRead;
         moduleOut.isMemWrite <= moduleIn.isMemWrite;
@@ -125,7 +124,7 @@ always_ff @(posedge clk  or posedge rst) begin
         moduleOut.instrAddr <= moduleIn.instrAddr;
         moduleOut.instr <= moduleIn.instr;
 
-        moduleOut.flags <= flags;
+        moduleOut.flagResult <= moduleIn.flagInv^(flags[moduleIn.useflag]);
 
         newOp <= 1;
     end
