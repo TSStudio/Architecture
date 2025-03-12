@@ -27,6 +27,8 @@ u4 memMode;
 logic rv64;
 logic rvm;
 u4 mulOp;
+logic cns, flagInv;
+u2 useflag; //use which flag
 
 assign lwHold = isMemRead & moduleIn.valid;
 
@@ -46,7 +48,10 @@ maindecoder maindecoder_inst(
     .isMemRead(isMemRead),
     .rv64(rv64),
     .memMode(memMode),
-    .rvm(rvm)
+    .rvm(rvm),
+    .cns(cns),
+    .flagInv(flagInv),
+    .useflag(useflag)
 );
 
 u64 rs1DataOutS1, rs1DataOutS2, rs2DataOutS1, rs2DataOutS2;
@@ -84,6 +89,10 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.isBranch <= isBranch;
         moduleOut.rv64 <= rv64;
         moduleOut.rvm <= rvm;
+
+        moduleOut.cns <= cns;
+        moduleOut.useflag <= useflag;
+        moduleOut.flagInv <= flagInv;
 
         moduleOut.instrAddr <= moduleIn.instrAddr;
         moduleOut.instr <= moduleIn.instr;

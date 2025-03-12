@@ -28,6 +28,7 @@ assign ib=moduleIn.srcB==2'b00 ? moduleIn.rs2:
             0;
 
 u64 aluOut;
+u32 aluOut32;
 u64 mulOut;
 u64 pcBranch;
 
@@ -38,11 +39,15 @@ alu alu(
     .ia(ia),
     .ib(ib),
     .aluOp(moduleIn.aluOp),
-    .aluOut(aluOut)
+    .aluOut(aluOut),
+    .aluOut32(aluOut32)
 );
 
 mul mul(
     .clk(clk),
+    .en(mulen),
+    .busy(mulbusy),
+    .newOp(newOp),
     .ia(ia),
     .ib(ib),
     .mulOp(moduleIn.mulOp),
@@ -54,18 +59,52 @@ initial begin
 end
 
 u64 datUse;
-assign datUse = moduleIn.rvm ? mulOut : aluOut;
 
-u64 aluOutProc;
+always_comb begin
+    if(moduleIn.rvm) begin
+        datUse = mulOut;
+    end else begin
+        if (moduleIn.rv64) begin
+            datUse = {{32{aluOut32[31]}},aluOut32};
+        end else begin
+            if (moduleIn.cns) begin
+                if(moduleIn.flagInv^(flags[moduleIn.useflag])) begin
+                    datUse = 1;
+                end else begin
+                    datUse = 0;
+                end
+                
+            end else begin
+                datUse = aluOut;
+            end
+        end
+    end
+end
 
-assign aluOutProc = moduleIn.rv64 ? {{32{datUse[31]}}, datUse[31:0]}: datUse;
+logic mulen;
+logic mulbusy;
+logic newOp;
+
+assign mulen = moduleIn.rvm;
 
 assign forwardSource.valid = moduleIn.valid & moduleIn.wd != 0;
 assign forwardSource.isWb = moduleIn.isWriteBack;
 assign forwardSource.wd = moduleIn.wd;
-assign forwardSource.wdData = aluOutProc;
+assign forwardSource.wdData = datUse;
 
 assign ok_to_proceed = 1; // always proceed, todo if multiply cannot complete in one cycle
+
+u3 flags;//0->2 ia<ib (unsigned)(ia<ib) ia=ib
+
+always_comb begin
+    if(ia[63]^ib[63]) begin
+        flags[0] = ia[63];
+    end else begin
+        flags[0] = ia<ib;
+    end
+    flags[1] = ia<ib;
+    flags[2] = ia==ib;
+end
 
 always_ff @(posedge clk  or posedge rst) begin
     if(rst) begin
@@ -73,7 +112,7 @@ always_ff @(posedge clk  or posedge rst) begin
     end else if(ok_to_proceed_overall) begin
         moduleOut.valid <= moduleIn.valid;
         moduleOut.rs2 <= moduleIn.rs2;
-        moduleOut.aluOut <= aluOutProc;
+        moduleOut.aluOut <= datUse;
         moduleOut.isWriteBack <= moduleIn.isWriteBack;
         moduleOut.wd <= moduleIn.wd;
         moduleOut.isBranch <= moduleIn.isBranch;
@@ -85,6 +124,14 @@ always_ff @(posedge clk  or posedge rst) begin
 
         moduleOut.instrAddr <= moduleIn.instrAddr;
         moduleOut.instr <= moduleIn.instr;
+
+        moduleOut.flags <= flags;
+
+        newOp <= 1;
+    end
+
+    if(newOp && !ok_to_proceed_overall) begin
+        newOp <= 0;
     end
 end
 

@@ -266,6 +266,10 @@ typedef struct packed {
     logic rv64;
     logic rvm;
 
+    logic cns; // compare and set
+    u2 useflag; 
+    logic flagInv;
+
     u32 instr;
     u64 instrAddr;
 
@@ -282,6 +286,8 @@ typedef struct packed {
     u5 wd;
     logic isBranch;
     u64 pcBranch;
+
+    u3 flags; //0->2 ia<ib ia<(u)ib ia=ib
 
     u32 instr;
     u64 instrAddr;

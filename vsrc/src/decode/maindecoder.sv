@@ -13,10 +13,28 @@ module maindecoder import common::*;(
     output u2 srcA,srcB,
     output logic isBranch, isWriteBack, isMemWrite, isMemRead,
     output u4 memMode,
-    output logic rvm
+    output logic rvm,
+
+    output logic cns, flagInv,
+    output u2 useflag //use which flag
 );
 
 assign isBranch    =  0; // todo lab3
+assign cns = (optype==3'b000 || optype==3'b001) && (funct3==3'b010 || funct3==3'b011); // slt sltu slti sltiu
+
+always_comb begin
+    if((optype==3'b000 || optype==3'b001)) begin
+        if(funct3==3'b010) begin
+            useflag = 2'b00;
+        end else begin
+            useflag = 2'b01;
+        end
+        flagInv = 0;
+    end else begin //todo branch
+        useflag = 2'b00;
+        flagInv = 0;
+    end
+end
 
 
 u3 immtype; // I:00 S:01 B:10 J:11
