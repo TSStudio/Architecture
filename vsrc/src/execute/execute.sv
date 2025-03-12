@@ -112,6 +112,7 @@ always_ff @(posedge clk  or posedge rst) begin
         moduleOut.valid <= moduleIn.valid & ~JumpEn;
         moduleOut.rs2 <= moduleIn.rs2;
         moduleOut.aluOut <= datUse;
+        moduleOut.pcPlus4 <= moduleIn.pcPlus4;
         moduleOut.isWriteBack <= moduleIn.isWriteBack;
         moduleOut.wd <= moduleIn.wd;
         moduleOut.isBranch <= moduleIn.isBranch;

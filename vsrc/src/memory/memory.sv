@@ -63,6 +63,7 @@ always_ff @(posedge clk or posedge rst) begin
     end else if(ok_to_proceed_overall) begin
         moduleOut.valid <= moduleIn.valid;
         moduleOut.aluOut <= moduleIn.aluOut;
+        moduleOut.pcPlus4 <= moduleIn.pcPlus4;
         moduleOut.isWriteBack <= moduleIn.isWriteBack;
         moduleOut.isMemRead <= moduleIn.isMemRead;
         moduleOut.wd <= moduleIn.wd;

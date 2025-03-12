@@ -283,6 +283,7 @@ typedef struct packed {
     logic valid;
     u64 rs2;
     u64 aluOut;
+    u64 pcPlus4;
     logic isWriteBack;
     u5 wd;
     logic isBranch;
@@ -301,6 +302,7 @@ typedef struct packed {
 typedef struct packed {
     logic  valid;
     u64 aluOut;
+    u64 pcPlus4;
     u5  wd;
     logic isWriteBack;
     

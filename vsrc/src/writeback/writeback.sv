@@ -21,7 +21,7 @@ assign ok_to_proceed = ok;
 
 assign JumpEn = (moduleIn.isJump|(moduleIn.isBranch&moduleIn.branchAdopted)) & moduleIn.valid;
 
-assign JumpAddr = moduleIn.aluOut;
+assign JumpAddr = {moduleIn.aluOut[63:1],1'b0};
 
 logic ok;
 
@@ -42,8 +42,13 @@ always_ff @(posedge clk or posedge rst) begin
                 moduleOut.wdData <= moduleIn.isMemRead?moduleIn.memOut:moduleIn.aluOut;
                 moduleOut.instrAddr <= moduleIn.instrAddr;
                 moduleOut.instr <= moduleIn.instr;
-            end
-            else begin
+            end else if (moduleIn.isJump) begin
+                moduleOut.isWb <= 1;
+                moduleOut.wd <= moduleIn.wd;
+                moduleOut.wdData <= moduleIn.pcPlus4;
+                moduleOut.instrAddr <= moduleIn.instrAddr;
+                moduleOut.instr <= moduleIn.instr;
+            end else begin
                 wbEn <= 0;
                 moduleOut.isWb <= 0;
                 moduleOut.instrAddr <= moduleIn.instrAddr;
