@@ -9,3 +9,4 @@ difftest/*
 *.zip
 ready-to-run/
 .DS_Store
+docs/
