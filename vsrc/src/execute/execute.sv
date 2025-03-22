@@ -32,6 +32,7 @@ assign ib=moduleIn.srcB==2'b00 ? moduleIn.rs2:
 u64 aluOut;
 u32 aluOut32;
 u64 mulOut;
+u32 mulOut32;
 
 alu alu(
     .clk(clk),
@@ -49,8 +50,9 @@ mul mul(
     .newOp(newOp),
     .ia(ia),
     .ib(ib),
-    .mulOp(moduleIn.mulOp),
-    .mulOut(mulOut)
+    .mulOp(moduleIn.mulOp[2:0]),
+    .mulOut(mulOut),
+    .mulOut32(mulOut32)
 );
 
 initial begin
@@ -61,7 +63,11 @@ u64 datUse;
 
 always_comb begin
     if(moduleIn.rvm) begin
-        datUse = mulOut;
+        if (moduleIn.rv64) begin
+            datUse = mulOut;
+        end else begin
+            datUse = {{32{mulOut32[31]}},mulOut32};
+        end
     end else begin
         if (moduleIn.rv64) begin
             datUse = {{32{aluOut32[31]}},aluOut32};

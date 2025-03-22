@@ -8,98 +8,97 @@ module mul import common::*;(
     input logic en,
     input logic newOp,
     output logic busy,
-    input u4 mulOp,
-    output u64 mulOut
+    input u3 mulOp,
+    output u64 mulOut,
+    output u32 mulOut32
 );
 //ops:
-// 0000: mul
-// 0100: div
-// 0101: divu
-// 0110: rem
-// 0111: remu
-// 1000: mulw
-// 1100: divw
-// 1101: divuw
-// 1110: remw
-// 1111: remuw
-u64 sign_extended_a;
-u64 sign_extended_b;
-u64 unsigned_a;
-u64 unsigned_b;
+// 000: mul
+// 100: div
+// 101: divu
+// 110: rem
+// 111: remu
+// 000: mulw
+// 100: divw
+// 101: divuw
+// 110: remw
+// 111: remuw
 
-assign sign_extended_a = {{32{ia[31]}}, ia[31:0]};
-assign sign_extended_b = {{32{ib[31]}}, ib[31:0]};
-assign unsigned_a = {32'b0, ib[31:0]};
-assign unsigned_b = {32'b0, ib[31:0]};
+assign busy = 0;
 
-u64 result;
-u7 shift; //16*4, done in 16 cycles, each cycle run 4 adds
-u4 cur_chunk;
+u64 ia_inv, ib_inv;
+assign ia_inv = (~ia) + 1;
+assign ib_inv = (~ib) + 1;
 
-u64 res0,res1,res2,res3;
+u32 ia32, ib32, ia32_inv, ib32_inv;
 
-assign res0=cur_chunk[0] ? 0 : ia;
-assign res1=cur_chunk[1] ? 0 : ia;
-assign res2=cur_chunk[2] ? 0 : ia;
-assign res3=cur_chunk[3] ? 0 : ia;
+assign ia32 = ia[31:0];
+assign ib32 = ib[31:0];
+assign ia32_inv = ia_inv[31:0];
+assign ib32_inv = ib_inv[31:0];
 
-logic mulBusy;
-logic divBusy;
+logic ia_sign,ib_sign,ia32_sign,ib32_sign;
+logic out_sign,out32_sign;
 
-assign busy=mulBusy||divBusy;
+assign ia_sign = ia[63];
+assign ib_sign = ib[63];
+assign ia32_sign = ia32[31];
+assign ib32_sign = ib32[31];
 
-u3 divia,divib;
+assign out_sign = ia_sign ^ ib_sign;
+assign out32_sign = ia32_sign ^ ib32_sign;
 
-u64 diva,divb;
+u64 ia_abs, ib_abs;
+u32 ia32_abs, ib32_abs;
 
-u64 div_quotient;
-u64 div_remainder;
+assign ia_abs = ia_sign ? ia_inv : ia;
+assign ib_abs = ib_sign ? ib_inv : ib;
+assign ia32_abs = ia32_sign ? ia32_inv : ia32;
+assign ib32_abs = ib32_sign ? ib32_inv : ib32;
 
-logic div_out_mux;
+u64 out_tmp;
+u32 out32_tmp;
 
 always_comb begin
-    case (divia) 
-        3'b000: diva = ia;
-        3'b001: diva = sign_extended_a;
-        3'b010: diva = unsigned_a;
-        default: diva = 0;
+    case(mulOp)
+        3'b000: begin
+            mulOut = ia * ib;
+            mulOut32 = ia32 * ib32;
+            out_tmp = 0;
+            out32_tmp = 0;
+        end
+        3'b100: begin
+            out_tmp = ia_abs / ib_abs;
+            out32_tmp = ia32_abs / ib32_abs;
+            mulOut = out_sign ? (~out_tmp) + 1 : out_tmp;
+            mulOut32 = out32_sign ? (~out32_tmp) + 1 : out32_tmp;
+        end
+        3'b101: begin
+            mulOut = ia / ib;
+            mulOut32 = ia32 / ib32;
+            out_tmp = 0;
+            out32_tmp = 0;
+        end
+        3'b110: begin
+            out_tmp = ia_abs % ib_abs;
+            out32_tmp = ia32_abs % ib32_abs;
+            mulOut = out_sign ? (~out_tmp) + 1 : out_tmp;
+            mulOut32 = out32_sign ? (~out32_tmp) + 1 : out32_tmp;
+        end
+        3'b111: begin
+            mulOut = ia % ib;
+            mulOut32 = ia32 % ib32;
+            out_tmp = 0;
+            out32_tmp = 0;
+        end
+        default: begin
+            mulOut = 0;
+            mulOut32 = 0;
+            out_tmp = 0;
+            out32_tmp = 0;
+        end
+        
     endcase
-    case (divib) 
-        3'b000: divb = ib;
-        3'b001: divb = sign_extended_b;
-        3'b010: divb = unsigned_b;
-        default: divb = 0;
-    endcase
-end
-
-
-always_ff @(posedge clk) begin
-    if(en && newOp) begin
-        if (mulOp==4'b0000||mulOp==4'b1000) begin
-            mulBusy <= 1;
-            shift <= 0;
-            result <= 0;
-            cur_chunk <= ib[3:0];
-        end
-        else begin 
-            //div, rem
-            
-        end
-    end
-    if(en && mulBusy) begin
-        result <= result + (res0<<shift) + (res1<<(shift+1)) + (res2<<(shift+2)) + (res3<<(shift+3));
-        shift <= shift + 4;
-        //cur_chunk <= 4'b1111 & (ib >> shift[3:0]) ;
-        if(mulOp==4'b0000 && shift==64) begin
-            mulOut <= result;
-            mulBusy <= 0;
-        end
-        if(mulOp==4'b1000 && shift==32) begin
-            mulOut <= {{32{result[31]}}, result[31:0]};
-            mulBusy <= 0;
-        end
-    end
-    
 end
 
 endmodule

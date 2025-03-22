@@ -19,6 +19,8 @@
 
 注意到 lui 指令的结果实际上是 寄存器+0，另外注意到 auipc 指令的结果是 寄存器+pc，考虑到 ALU 的 B 接口已经可以接入立即数，因此重新配置 A，使得其可以接入数字 0、PC，RS1 的其中一个。其余部分等同于 I 类型指令。不再赘述。
 
+Remember to leave room for implementing `auipc`.
+
 ### 完成 load、store 指令
 
 实际上 load、store 指令的访存时序上，没有难度，这与 fetch 阶段获取指令的时序应当保持一致。取回的数据需要暂存，因为只会出现 1 个周期。
