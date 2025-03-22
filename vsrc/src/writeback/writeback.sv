@@ -61,7 +61,9 @@ always_ff @(posedge clk or posedge rst) begin
             // write back
             wbEn <= 1;
             wd <= moduleIn.wd;
-            wbData <= moduleIn.isMemRead?moduleIn.memOut:moduleIn.aluOut;
+            wbData <= moduleIn.isMemRead?moduleIn.memOut:
+                        moduleIn.isJump?moduleIn.pcPlus4:
+                         moduleIn.aluOut;
         end
         else begin
             wbEn <= 0;

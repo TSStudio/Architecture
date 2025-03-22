@@ -25,8 +25,8 @@ always_comb begin
         3'b011: aluOut = ia | ib;
         3'b100: aluOut = ia & ib;
         3'b101: aluOut = ia << ib[5:0];
-        3'b110: aluOut = ia >> ib;
-        3'b111: aluOut = ia >>> ib;
+        3'b110: aluOut = ia >> ib[5:0];
+        3'b111: aluOut = ($signed(ia)) >>> ib[5:0];
     endcase
     case(aluOp)
         3'b000: aluOut32 = ia32 + ib32;
@@ -35,8 +35,8 @@ always_comb begin
         3'b011: aluOut32 = ia32 | ib32;
         3'b100: aluOut32 = ia32 & ib32;
         3'b101: aluOut32 = ia32 << ib32[4:0];
-        3'b110: aluOut32 = ia32 >> ib32;
-        3'b111: aluOut32 = ia32 >>> ib32;
+        3'b110: aluOut32 = ia32 >> ib32[4:0];
+        3'b111: aluOut32 = ($signed(ia32)) >>> ib32[4:0];
     endcase
 end
 

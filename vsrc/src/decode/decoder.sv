@@ -29,7 +29,7 @@ u4 memMode;
 logic rv64;
 logic rvm;
 u4 mulOp;
-logic cns, flagInv;
+logic cns, cmpSrcB, flagInv;
 u2 useflag; //use which flag
 
 assign lwHold = (isBranch||isJump||isMemRead) & moduleIn.valid & ~JumpEn;
@@ -53,6 +53,7 @@ maindecoder maindecoder_inst(
     .memMode(memMode),
     .rvm(rvm),
     .cns(cns),
+    .cmpSrcB(cmpSrcB),
     .flagInv(flagInv),
     .useflag(useflag)
 );
@@ -96,6 +97,7 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.rvm <= rvm;
 
         moduleOut.cns <= cns;
+        moduleOut.cmpSrcB <= cmpSrcB;
         moduleOut.useflag <= useflag;
         moduleOut.flagInv <= flagInv;
 

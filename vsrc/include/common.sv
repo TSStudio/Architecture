@@ -268,6 +268,7 @@ typedef struct packed {
     logic rvm;
 
     logic cns; // compare and set
+    logic cmpSrcB; // compare source B 0 for rs2, 1 for imm
     u2 useflag; 
     logic flagInv;
 

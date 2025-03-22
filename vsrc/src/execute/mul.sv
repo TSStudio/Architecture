@@ -68,28 +68,85 @@ always_comb begin
             out32_tmp = 0;
         end
         3'b100: begin
-            out_tmp = ia_abs / ib_abs;
-            out32_tmp = ia32_abs / ib32_abs;
-            mulOut = out_sign ? (~out_tmp) + 1 : out_tmp;
-            mulOut32 = out32_sign ? (~out32_tmp) + 1 : out32_tmp;
+            if (ib == 0) begin
+                mulOut = ~0;
+                mulOut32 = ~0;
+                out_tmp = 0;
+                out32_tmp = 0;
+            end else begin
+                if (ib32 == 0) begin 
+                    out_tmp = ia_abs / ib_abs;
+                    mulOut = out_sign ? (~out_tmp) + 1 : out_tmp;
+                    mulOut32 = ~0;
+                    out32_tmp = 0;
+                end else begin
+                    out_tmp = ia_abs / ib_abs;
+                    out32_tmp = ia32_abs / ib32_abs;
+                    mulOut = out_sign ? (~out_tmp) + 1 : out_tmp;
+                    mulOut32 = out32_sign ? (~out32_tmp) + 1 : out32_tmp;
+                end
+            end
         end
         3'b101: begin
-            mulOut = ia / ib;
-            mulOut32 = ia32 / ib32;
-            out_tmp = 0;
-            out32_tmp = 0;
+            if (ib == 0) begin
+                mulOut = ~0;
+                mulOut32 = ~0;
+                out_tmp = 0;
+                out32_tmp = 0;
+            end else begin
+                if (ib32 == 0) begin
+                    mulOut = ia / ib;
+                    out_tmp = 0;
+                    mulOut32 = ~0;
+                    out32_tmp = 0;
+                end else begin
+                    mulOut = ia / ib;
+                    mulOut32 = ia32 / ib32;
+                    out_tmp = 0;
+                    out32_tmp = 0;
+                end
+            end
         end
         3'b110: begin
-            out_tmp = ia_abs % ib_abs;
-            out32_tmp = ia32_abs % ib32_abs;
-            mulOut = out_sign ? (~out_tmp) + 1 : out_tmp;
-            mulOut32 = out32_sign ? (~out32_tmp) + 1 : out32_tmp;
+            if(ib==0) begin
+                mulOut = ia;
+                mulOut32 = ia32;
+                out_tmp = 0;
+                out32_tmp = 0;
+            end else begin
+                if(ib32==0) begin
+                    out_tmp = ia_abs % ib_abs;
+                    mulOut = ia_sign ? (~out_tmp) + 1 : out_tmp;
+
+                    mulOut32 = ia32;
+                    out32_tmp = 0;
+                end else begin
+                    out_tmp = ia_abs % ib_abs;
+                    mulOut = ia_sign ? (~out_tmp) + 1 : out_tmp;
+                    out32_tmp = ia32_abs % ib32_abs;
+                    mulOut32 = ia32_sign ? (~out32_tmp) + 1 : out32_tmp;
+                end
+            end
         end
         3'b111: begin
-            mulOut = ia % ib;
-            mulOut32 = ia32 % ib32;
-            out_tmp = 0;
-            out32_tmp = 0;
+            if (ib == 0) begin
+                mulOut = ia;
+                mulOut32 = ia32;
+                out_tmp = 0;
+                out32_tmp = 0;
+            end else begin
+                if (ib32 == 0) begin
+                    mulOut = ia % ib;
+                    out_tmp = 0;
+                    mulOut32 = ia32;
+                    out32_tmp = 0;
+                end else begin
+                    mulOut = ia % ib;
+                    mulOut32 = ia32 % ib32;
+                    out_tmp = 0;
+                    out32_tmp = 0;
+                end
+            end
         end
         default: begin
             mulOut = 0;

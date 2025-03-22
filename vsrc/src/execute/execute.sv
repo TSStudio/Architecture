@@ -64,9 +64,9 @@ u64 datUse;
 always_comb begin
     if(moduleIn.rvm) begin
         if (moduleIn.rv64) begin
-            datUse = mulOut;
-        end else begin
             datUse = {{32{mulOut32[31]}},mulOut32};
+        end else begin
+            datUse = mulOut;
         end
     end else begin
         if (moduleIn.rv64) begin
@@ -101,14 +101,18 @@ assign ok_to_proceed = 1; // always proceed, todo if multiply cannot complete in
 
 u3 flags;//0->2 ia<ib (unsigned)(ia<ib) ia=ib
 
+u64 compB;
+
+assign compB = moduleIn.cmpSrcB ? moduleIn.imm : moduleIn.rs2;
+
 always_comb begin
-    if(ia[63]^ib[63]) begin
-        flags[0] = ia[63];
+    if(moduleIn.rs1[63]^compB[63]) begin
+        flags[0] = moduleIn.rs1[63];
     end else begin
-        flags[0] = ia<ib;
+        flags[0] = moduleIn.rs1<compB;
     end
-    flags[1] = ia<ib;
-    flags[2] = ia==ib;
+    flags[1] = moduleIn.rs1<compB;
+    flags[2] = moduleIn.rs1==compB;
 end
 
 always_ff @(posedge clk  or posedge rst) begin
