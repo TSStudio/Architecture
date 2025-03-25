@@ -24,7 +24,9 @@ assign msize =  (memMode == 4'b0000) ? MSIZE8: // lb
                 (memMode == 4'b1010) ? MSIZE8: // sw
                 (memMode == 4'b1011) ? MSIZE8: // sd
                 MSIZE1;
-assign addr = {addressReq[63:3], 3'b000};
+// assign addr = {addressReq[63:3], 3'b000};
+
+assign addr = addressReq;
 
 assign strobe = (memMode == 4'b1000) ? (// sb
                     addressReq[2:0] == 3'b000 ? 8'b00000001:

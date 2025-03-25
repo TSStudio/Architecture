@@ -42,17 +42,23 @@ always_ff @(posedge clk or posedge rst) begin
                 moduleOut.wdData <= moduleIn.isMemRead?moduleIn.memOut:moduleIn.aluOut;
                 moduleOut.instrAddr <= moduleIn.instrAddr;
                 moduleOut.instr <= moduleIn.instr;
+                moduleOut.isMem <= moduleIn.isMem;
+                moduleOut.memAddr <= moduleIn.memAddr;
             end else if (moduleIn.isJump) begin
                 moduleOut.isWb <= 1;
                 moduleOut.wd <= moduleIn.wd;
                 moduleOut.wdData <= moduleIn.pcPlus4;
                 moduleOut.instrAddr <= moduleIn.instrAddr;
                 moduleOut.instr <= moduleIn.instr;
+                moduleOut.isMem <= moduleIn.isMem;
+                moduleOut.memAddr <= moduleIn.memAddr;
             end else begin
                 wbEn <= 0;
                 moduleOut.isWb <= 0;
                 moduleOut.instrAddr <= moduleIn.instrAddr;
                 moduleOut.instr <= moduleIn.instr;
+                moduleOut.isMem <= moduleIn.isMem;
+                moduleOut.memAddr <= moduleIn.memAddr;
             end
         end
         ok <= 0;

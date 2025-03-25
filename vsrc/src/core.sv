@@ -36,7 +36,7 @@ datapath datapath_inst(
 		.valid              (wb_commit.valid),
 		.pc                 (wb_commit.instrAddr),
 		.instr              (wb_commit.instr),
-		.skip               (0),
+		.skip               ((wb_commit.isMem & wb_commit.memAddr[31] == 0)),
 		.isRVC              (0),
 		.scFailed           (0),
 		.wen                (wb_commit.isWb),

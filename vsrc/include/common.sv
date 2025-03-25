@@ -317,6 +317,9 @@ typedef struct packed {
     u64 instrAddr;
 
     logic isMemRead;
+
+    logic isMem;
+    u64 memAddr;
 } REG_MEM_WB;
 
 typedef struct packed {
@@ -326,6 +329,9 @@ typedef struct packed {
     logic isWb;
     u5  wd;
     u64 wdData;
+
+    logic isMem;
+    u64 memAddr;
 } WB_COMMIT;
 
 typedef struct packed {

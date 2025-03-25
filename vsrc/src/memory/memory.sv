@@ -74,6 +74,9 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.instrAddr <= moduleIn.instrAddr;
         moduleOut.instr <= moduleIn.instr;
 
+        moduleOut.isMem <= moduleIn.isMemRead | moduleIn.isMemWrite;
+        moduleOut.memAddr <= moduleIn.aluOut;
+
         cur_mem_op_done <= 0;
         cur_mem_op_started <= 0;
     end
