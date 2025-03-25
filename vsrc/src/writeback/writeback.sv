@@ -10,6 +10,10 @@ module writeback import common::*;(
     output u64 wbData,
     output WB_COMMIT moduleOut,
 
+    output u64 CSR_value,
+    output u12 CSR_addr,
+    output logic CSR_wbEn,
+
     output logic JumpEn,
     output u64 JumpAddr,
 
@@ -70,9 +74,15 @@ always_ff @(posedge clk or posedge rst) begin
             wbData <= moduleIn.isMemRead?moduleIn.memOut:
                         moduleIn.isJump?moduleIn.pcPlus4:
                          moduleIn.aluOut;
-        end
-        else begin
+        end else begin
             wbEn <= 0;
+        end
+        if(moduleIn.isCSRWrite & moduleIn.valid) begin
+            CSR_wbEn <= 1;
+            CSR_addr <= moduleIn.CSR_addr;
+            CSR_value <= moduleIn.CSR_write_value;
+        end else begin
+            CSR_wbEn <= 0;
         end
         moduleOut.valid <= 0;
     end

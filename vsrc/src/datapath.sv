@@ -1,6 +1,7 @@
 `ifdef VERILATOR
 `include "include/common.sv"
 `include "src/regfile.sv"
+`include "src/csr.sv"
 `include "src/fetch/pc.sv"
 `include "src/decode/decoder.sv"
 `include "src/execute/execute.sv"
@@ -25,6 +26,8 @@ REG_MEM_WB mem_wb;
 
 FORWARD_SOURCE fwd_EX_EX, fwd_MEM_EX;
 
+CSR_FORWARD_SOURCE csr_fwd_EX_EX, csr_fwd_MEM_EX;
+
 u5 rs1,rs2,wd;
 u64 rs1Data,rs2Data,wdData;
 logic wbEn;
@@ -40,6 +43,13 @@ assign o2p = o2p_fetch & o2p_decode & o2p_execute & o2p_memory & o2p_writeback;
 logic JumpEn;
 u64 JumpAddr;
 
+u12 CSR_addr;
+u64 CSR_value;
+
+logic CSR_wbEn;
+u12 CSR_write_addr;
+u64 CSR_write_value;
+
 regfile regfile_inst(
     .clk(clk),
     .rst(rst),
@@ -51,6 +61,17 @@ regfile regfile_inst(
     .rs1Data(rs1Data),
     .rs2Data(rs2Data),
     .regs(regs)
+);
+
+csr csr_inst(
+    .clk(clk),
+    .rst(rst),
+    .read_target(CSR_addr),
+    .read_data(CSR_value),
+    .write_target(CSR_write_addr),
+    .write_data(CSR_write_value),
+    .csrs(),
+    .wdEn(CSR_wbEn)
 );
 
 programCounter pc_inst(
@@ -78,8 +99,12 @@ decoder decoder_inst(
     .rs2Data(rs2Data),
     .fwdSrc1(fwd_MEM_EX),
     .fwdSrc2(fwd_EX_EX),
+    .csrFwdSrc1(csr_fwd_MEM_EX),
+    .csrFwdSrc2(csr_fwd_EX_EX),
     .ok_to_proceed(o2p_decode),
     .ok_to_proceed_overall(o2p),
+    .CSR_addr(CSR_addr),
+    .CSR_value(CSR_value),
     .JumpEn(JumpEn)
 );
 
@@ -89,6 +114,7 @@ execute execute_inst(
     .moduleIn(id_ex),
     .moduleOut(ex_mem),
     .forwardSource(fwd_EX_EX),
+    .csrForwardSource(csr_fwd_EX_EX),
     .ok_to_proceed(o2p_execute),
     .ok_to_proceed_overall(o2p),
     .JumpEn(JumpEn)
@@ -100,6 +126,7 @@ memory memory_inst(
     .moduleIn(ex_mem),
     .moduleOut(mem_wb),
     .forwardSource(fwd_MEM_EX),
+    .csrForwardSource(csr_fwd_MEM_EX),
     .dreq(dreq),
     .dresp(dresp),
     .ok_to_proceed(o2p_memory),
@@ -117,7 +144,10 @@ writeback writeback_inst(
     .ok_to_proceed(o2p_writeback),
     .ok_to_proceed_overall(o2p),
     .JumpEn(JumpEn),
-    .JumpAddr(JumpAddr)
+    .JumpAddr(JumpAddr),
+    .CSR_value(CSR_write_value),
+    .CSR_addr(CSR_write_addr),
+    .CSR_wbEn(CSR_wbEn)
 );
 
 

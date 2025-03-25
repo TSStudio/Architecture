@@ -223,6 +223,18 @@ typedef enum i2 {
     AXI_BURST_RESERVED
 } axi_burst_type_t;
 
+typedef enum u3 {
+    CSRRW = 3'b001,
+    CSRRS = 3'b010,
+    CSRRC = 3'b011,
+    CSRRWI = 3'b101,
+    CSRRSI = 3'b110,
+    CSRRCI = 3'b111,
+
+    UNKNOWN1 = 3'b000,
+    UNKNOWN2 = 3'b100
+} csr_op_t;
+
 typedef struct packed {
     logic    valid;     // in request?
     logic    is_write;  // is it a write transaction?
@@ -255,7 +267,7 @@ typedef struct packed {
     u64 pc;
     u64 rs1;
     u2 srcA; // 00: 0, 01: rs1, 10: pc
-    u2 srcB; // 00: rs2, 01: imm, 10: imm<<12 
+    u2 srcB; // 00: rs2, 01: imm, 10: imm<<12 , 11: csr
     u64 rs2;
     u64 imm;
     logic isWriteBack;
@@ -278,6 +290,11 @@ typedef struct packed {
     logic isMemWrite;
     logic isMemRead;
     u4 memMode;
+
+    logic isCSRWrite;
+    u64 CSR_value;
+    u12 CSR_addr;
+    csr_op_t csr_op;
 } REG_ID_EX;
 
 typedef struct packed {
@@ -298,6 +315,10 @@ typedef struct packed {
     logic isMemWrite;
     logic isMemRead;
     u4 memMode;
+
+    logic isCSRWrite;
+    u64 CSR_write_value;
+    u12 CSR_addr;
 } REG_EX_MEM;
 
 typedef struct packed {
@@ -320,6 +341,10 @@ typedef struct packed {
 
     logic isMem;
     u64 memAddr;
+
+    logic isCSRWrite;
+    u64 CSR_write_value;
+    u12 CSR_addr;
 } REG_MEM_WB;
 
 typedef struct packed {
@@ -340,6 +365,12 @@ typedef struct packed {
     u5  wd;
     u64 wdData;
 } FORWARD_SOURCE;
+
+typedef struct packed {
+    logic valid;
+    u12 wd;
+    u64 wdData;
+} CSR_FORWARD_SOURCE;
 
 endpackage
 `endif

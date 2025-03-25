@@ -9,6 +9,7 @@ module execute import common::*;(
     input REG_ID_EX moduleIn,
     output REG_EX_MEM moduleOut,
     output FORWARD_SOURCE forwardSource,
+    output CSR_FORWARD_SOURCE csrForwardSource,
 
     output logic ok_to_proceed,
     input logic ok_to_proceed_overall,
@@ -27,12 +28,23 @@ assign ia=moduleIn.srcA==2'b00 ? 64'b0:
 assign ib=moduleIn.srcB==2'b00 ? moduleIn.rs2:
             moduleIn.srcB==2'b01 ? moduleIn.imm:
             moduleIn.srcB==2'b10 ? (moduleIn.imm<<12):
-            0;
+            moduleIn.CSR_value;
 
 u64 aluOut;
 u32 aluOut32;
 u64 mulOut;
 u32 mulOut32;
+
+u64 CSR_write_value;
+
+assign CSR_write_value = 
+                        moduleIn.csr_op==CSRRW ? moduleIn.rs1:
+                        moduleIn.csr_op==CSRRS ? moduleIn.CSR_value | moduleIn.rs1:
+                        moduleIn.csr_op==CSRRC ? moduleIn.CSR_value & ~moduleIn.rs1:
+                        moduleIn.csr_op==CSRRWI ? moduleIn.imm:
+                        moduleIn.csr_op==CSRRSI ? moduleIn.CSR_value | moduleIn.imm:
+                        moduleIn.csr_op==CSRRCI ? moduleIn.CSR_value & ~moduleIn.imm:
+                        0;
 
 alu alu(
     .clk(clk),
@@ -97,6 +109,10 @@ assign forwardSource.isWb = moduleIn.isWriteBack;
 assign forwardSource.wd = moduleIn.wd;
 assign forwardSource.wdData = datUse;
 
+assign csrForwardSource.valid = moduleIn.valid & moduleIn.isCSRWrite;
+assign csrForwardSource.wd = moduleIn.CSR_addr;
+assign csrForwardSource.wdData = CSR_write_value;
+
 assign ok_to_proceed = 1; // always proceed, todo if multiply cannot complete in one cycle
 
 u3 flags;//0->2 ia<ib (unsigned)(ia<ib) ia=ib
@@ -136,6 +152,10 @@ always_ff @(posedge clk  or posedge rst) begin
         moduleOut.instr <= moduleIn.instr;
 
         moduleOut.flagResult <= moduleIn.flagInv^(flags[moduleIn.useflag]);
+
+        moduleOut.isCSRWrite <= moduleIn.isCSRWrite;
+        moduleOut.CSR_write_value <= CSR_write_value;
+        moduleOut.CSR_addr <= moduleIn.CSR_addr;
 
         newOp <= 1;
     end
