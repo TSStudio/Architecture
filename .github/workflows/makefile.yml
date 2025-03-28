@@ -15,30 +15,33 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: install dependency
-      run: sudo apt update
-      run: sudo apt install git help2man perl python3 make autoconf g++ flex bison ccache libgoogle-perftools-dev numactl perl-doc
-      run: sudo apt install libsdl2-dev
-      run: sudo apt install libfl2
-      run: sudo apt install libfl-dev
-      run: sudo apt install zlib1g zlib1g-dev
-      run: git clone https://github.com/verilator/verilator.git
+      run: |
+        sudo apt update
+        sudo apt install git help2man perl python3 make autoconf g++ flex bison ccache libgoogle-perftools-dev numactl perl-doc
+        sudo apt install libsdl2-dev
+        sudo apt install libfl2
+        sudo apt install libfl-dev
+        sudo apt install zlib1g zlib1g-dev
+        git clone https://github.com/verilator/verilator.git
       
     - name: compile verilator
-      run: cd verilator
-      run: git checkout v5.032
-      run: autoconf
-      run: ./configure
-      run: make -j12
-      run: sudo make install
-      run: cd ~
+      run: |
+        cd verilator
+        git checkout v5.032
+        autoconf
+        ./configure
+        make -j12
+        sudo make install
+        cd ~
       
     - name: get difftest
       run: git submodule update --init --recursive
 
     - name: Run check
-      run: make test-lab1
-      run: make test-lab1-extra
-      run: make test-lab2
-      run: make test-lab3
-      run: make test-lab3-extra
+      run: |
+        make test-lab1
+        make test-lab1-extra
+        make test-lab2
+        make test-lab3
+        make test-lab3-extra
       
