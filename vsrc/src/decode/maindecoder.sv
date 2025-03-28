@@ -15,7 +15,11 @@ module maindecoder import common::*;(
     output u4 memMode,
     output logic rvm,
 
-    output logic cns, flagInv,
+    output logic isCSRWrite,
+    output csr_op_t csr_op,
+    output u12 CSR_addr,
+
+    output logic cns, cmpSrcB, flagInv,
     output u2 useflag //use which flag
 );
 
@@ -24,13 +28,22 @@ assign isJump      =  instr[6:0]==7'b1100111 || instr[6:0]==7'b1101111; // J-typ
 assign cns = (optype==3'b000 || optype==3'b001) && (funct3==3'b010 || funct3==3'b011); // slt sltu slti sltiu
 
 always_comb begin
-    if((optype==3'b000 || optype==3'b001)) begin
+    if((optype==3'b000)) begin
         if(funct3==3'b010) begin
             useflag = 2'b00;
         end else begin
             useflag = 2'b01;
         end
         flagInv = 0;
+        cmpSrcB = 0;
+    end else if (optype==3'b001) begin
+        if(funct3==3'b010) begin
+            useflag = 2'b00;
+        end else begin
+            useflag = 2'b01;
+        end
+        flagInv = 0;
+        cmpSrcB = 1;
     end else begin
         if(funct3==3'b000) begin //beq
             useflag = 2'b10;
@@ -54,6 +67,7 @@ always_comb begin
             useflag = 2'b00;
             flagInv = 0;
         end
+        cmpSrcB = 0;
     end
 end
 
@@ -70,6 +84,7 @@ assign immtype =
                 (instr[6:0]==7'b1100011)? 3'b010:
                 (instr[6:0]==7'b0110111 || instr[6:0]==7'b0010111)? 3'b100: // U-type
                 (instr[6:0]==7'b1101111)? 3'b011: // J-type
+                (instr[6:0]==7'b1110011 && instr[14]==1'b1) ? 3'b101: // CSR-I
                 3'b111;
 
 assign optype =
@@ -80,12 +95,11 @@ assign optype =
                 (instr[6:0]==7'b0100011)? 3'b100: // S-type
                 (instr[6:0]==7'b1101111)? 3'b101: // J-type
                 (instr[6:0]==7'b1100111)? 3'b110: // I-type jalr
-
                 (instr[6:0]==7'b0011011)? 3'b001: // 64-bit I-type 
                 (instr[6:0]==7'b0111011)? 3'b000: // 64-bit R-type
                 3'b111; // Unknown
 
-assign isWriteBack = ((instr[6:0]==7'b0000011) | (instr[6:0]==7'b0010011) | (instr[6:0]==7'b0110011) | (instr[6:0]==7'b0111011) | (instr[6:0]==7'b0011011) | (instr[6:0]==7'b0110111) | (instr[6:0]==7'b0010111)) ; // todo lab3
+assign isWriteBack = ((instr[6:0]==7'b0000011) | (instr[6:0]==7'b0010011) | (instr[6:0]==7'b0110011) | (instr[6:0]==7'b0111011) | (instr[6:0]==7'b0011011) | (instr[6:0]==7'b0110111) | (instr[6:0]==7'b0010111) | (instr[6:0]==7'b1101111) | (instr[6:0]==7'b1100111)) | (instr[6:0]==7'b1110011);
 
 assign rv64 = (instr[6:0]==7'b0111011 | instr[6:0]==7'b0011011)? 1:0;
 
@@ -98,14 +112,8 @@ assign isMemRead = (instr[6:0]==7'b0000011)? 1:0;
 assign memMode[2:0] = funct3;
 assign memMode[3] = isMemWrite;
 
-
-/*
-module signextend(
-    input u32 instr,
-    input u2 immSrc,
-    output u64 immOut
-);
-*/
+assign csr_op = csr_op_t'(instr[14:12]);
+assign isCSRWrite = (instr[6:0]==7'b1110011)? 1:0;
 
 signextend signextend_inst(
     .instr(instr),
@@ -119,12 +127,15 @@ assign rs2 = instr[24:20];
 assign wd = instr[11:7];
 
 assign srcA = (instr[6:0]==7'b0110111)?2'b00: // lui : 0
+              (instr[6:0]==7'b1110011)?2'b00: // csr : 0
               (instr[6:0]==7'b0010111)?2'b10: // auipc : pc
-              (instr[6:0]==7'b1100011)?2'b11: // branch: pc+4
-              (instr[6:0]==7'b1101111)?2'b11: // jal: pc+4
+              (instr[6:0]==7'b1100011)?2'b10: // branch: pc+4
+              (instr[6:0]==7'b1101111)?2'b10: // jal: pc
               (2'b01); // rest: rs1
 
-assign srcB = (immtype==3'b000 ||immtype==3'b100 || immtype==3'b001 || immtype==3'b011) ? 2'b01:2'b00; // 00: rs2, 01: imm, 10: imm<<12 
+assign srcB = (immtype==3'b000 || immtype==3'b100 || immtype==3'b001 || immtype==3'b011 || immtype==3'b010) ? 2'b01:
+(immtype==3'b101)? 2'b11:
+2'b00; // 00: rs2, 01: imm, 10: imm<<12, 11: CSR
 /*
         3'b000: aluOut = ia + ib;
         3'b001: aluOut = ia - ib;
@@ -147,7 +158,7 @@ assign aluOp = (optype==3'b000)?// R-type
                     : (funct3==3'b001)?
                         3'b101 // sll
                     : (funct3==3'b101)?
-                        ((funct7==7'b0000000)? 3'b110:3'b111) // srl, sra
+                        ((funct7[6:1]==6'b000000)? 3'b110:3'b111) // srl, sra
                     : 3'b000
                     )
                 : (optype==3'b001)?
@@ -162,7 +173,7 @@ assign aluOp = (optype==3'b000)?// R-type
                     : (funct3==3'b001)?
                         3'b101 // slli
                     : (funct3==3'b101)?
-                        ((funct7==7'b0000000)? 3'b110:3'b111) // srli, srai
+                        ((funct7[6:1]==6'b000000)? 3'b110:3'b111) // srli, srai
                     : 3'b000
                     )
                 : (optype==3'b010)?

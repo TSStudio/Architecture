@@ -13,9 +13,13 @@ module decoder import common::*;(
     input u64 rs1Data, rs2Data,
 
     input FORWARD_SOURCE fwdSrc1, fwdSrc2,
+    input CSR_FORWARD_SOURCE csrFwdSrc1, csrFwdSrc2,
 
     output logic ok_to_proceed,
     input logic ok_to_proceed_overall,
+
+    output u12 CSR_addr,
+    input u64 CSR_value,
 
     input logic JumpEn
 );
@@ -29,8 +33,11 @@ u4 memMode;
 logic rv64;
 logic rvm;
 u4 mulOp;
-logic cns, flagInv;
+logic cns, cmpSrcB, flagInv;
 u2 useflag; //use which flag
+
+logic isCSRWrite;
+csr_op_t csr_op;
 
 assign lwHold = (isBranch||isJump||isMemRead) & moduleIn.valid & ~JumpEn;
 
@@ -53,8 +60,13 @@ maindecoder maindecoder_inst(
     .memMode(memMode),
     .rvm(rvm),
     .cns(cns),
+    .cmpSrcB(cmpSrcB),
     .flagInv(flagInv),
-    .useflag(useflag)
+    .useflag(useflag),
+
+    .isCSRWrite(isCSRWrite),
+    .csr_op(csr_op),
+    .CSR_addr(CSR_addr)
 );
 
 u64 rs1DataOutS1, rs1DataOutS2, rs2DataOutS1, rs2DataOutS2;
@@ -64,6 +76,11 @@ assign rs1DataOutS2 = fwdSrc2.valid & fwdSrc2.isWb & fwdSrc2.wd == rs1 ? fwdSrc2
 
 assign rs2DataOutS1 = fwdSrc1.valid & fwdSrc1.isWb & fwdSrc1.wd == rs2 ? fwdSrc1.wdData : rs2Data;
 assign rs2DataOutS2 = fwdSrc2.valid & fwdSrc2.isWb & fwdSrc2.wd == rs2 ? fwdSrc2.wdData : rs2DataOutS1;
+
+u64 CSRoutS1, CSRoutS2;
+
+assign CSRoutS1 = csrFwdSrc1.valid & csrFwdSrc1.wd == CSR_addr ? csrFwdSrc1.wdData : CSR_value;
+assign CSRoutS2 = csrFwdSrc2.valid & csrFwdSrc2.wd == CSR_addr ? csrFwdSrc2.wdData : CSRoutS1;
 
 assign ok_to_proceed = 1; // always proceed
 
@@ -96,8 +113,14 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.rvm <= rvm;
 
         moduleOut.cns <= cns;
+        moduleOut.cmpSrcB <= cmpSrcB;
         moduleOut.useflag <= useflag;
         moduleOut.flagInv <= flagInv;
+
+        moduleOut.isCSRWrite <= isCSRWrite;
+        moduleOut.CSR_addr <= CSR_addr;
+        moduleOut.CSR_value <= CSRoutS2;
+        moduleOut.csr_op <= csr_op;
 
         moduleOut.instrAddr <= moduleIn.instrAddr;
         moduleOut.instr <= moduleIn.instr;

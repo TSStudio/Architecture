@@ -9,6 +9,7 @@ module memory import common::*;(
     input REG_EX_MEM moduleIn,
     output REG_MEM_WB moduleOut,
     output FORWARD_SOURCE forwardSource,
+    output CSR_FORWARD_SOURCE csrForwardSource,
 
     output dbus_req_t dreq,
     input  dbus_resp_t dresp,
@@ -32,6 +33,10 @@ assign forwardSource.valid = moduleIn.valid & moduleIn.wd != 0;
 assign forwardSource.isWb = moduleIn.isWriteBack;
 assign forwardSource.wd = moduleIn.wd;
 assign forwardSource.wdData = moduleIn.isMemRead ? dataOut:moduleIn.aluOut;
+
+assign csrForwardSource.valid = moduleIn.valid & moduleIn.isCSRWrite;
+assign csrForwardSource.wd = moduleIn.CSR_addr;
+assign csrForwardSource.wdData = moduleIn.CSR_write_value;
 
 msize_t msize;
 strobe_t strobe;
@@ -73,6 +78,13 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.memOut <= dataOut;
         moduleOut.instrAddr <= moduleIn.instrAddr;
         moduleOut.instr <= moduleIn.instr;
+
+        moduleOut.isMem <= moduleIn.isMemRead | moduleIn.isMemWrite;
+        moduleOut.memAddr <= moduleIn.aluOut;
+
+        moduleOut.isCSRWrite <= moduleIn.isCSRWrite;
+        moduleOut.CSR_write_value <= moduleIn.CSR_write_value;
+        moduleOut.CSR_addr <= moduleIn.CSR_addr;
 
         cur_mem_op_done <= 0;
         cur_mem_op_started <= 0;
