@@ -1,0 +1,44 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: install dependency
+      run: sudo apt update
+      run: sudo apt install git help2man perl python3 make autoconf g++ flex bison ccache libgoogle-perftools-dev numactl perl-doc
+      run: sudo apt install libsdl2-dev
+      run: sudo apt install libfl2
+      run: sudo apt install libfl-dev
+      run: sudo apt install zlib1g zlib1g-dev
+      run: git clone https://github.com/verilator/verilator.git
+      
+    - name: compile verilator
+      run: cd verilator
+      run: git checkout v5.032
+      run: autoconf
+      run: ./configure
+      run: make -j12
+      run: sudo make install
+      run: cd ~
+      
+    - name: get difftest
+      run: git submodule update --init --recursive
+
+    - name: Run check
+      run: make test-lab1
+      run: make test-lab1-extra
+      run: make test-lab2
+      run: make test-lab3
+      run: make test-lab3-extra
+      
