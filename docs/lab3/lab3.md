@@ -3,6 +3,8 @@
 佟铭洋  
 23300240009
 
+**需要注意的是，在 3 月 31 日本人对跳转逻辑做了一些修改，此文档在最后保留了修改前的相关说明**
+
 ## 思路与过程
 
 对于任务中的这么多指令，其实可以分成几种：
@@ -111,6 +113,111 @@ end
 
 ### BRANCH
 
+**本部分进行过更新，更新前的内容放在最后**
+
+对于 branch 指令，我们需要在 ALU 中计算出内存地址（加法），注意这条指令虽然用了 ALU，但并不需要写回。
+
+由于 jump 指令需要写回，我们将跳转统一放在 `memory` 中进行。此时下一条指令在 `execute` 中。
+
+我们要干两件事情：向控制线写跳转相关内容（组合逻辑），这用于将信号传递回 `fetch`，以及将正在 `decode` 和 `execute` 的指令记为无效；将现在这条指令继续传递给 `writeback`。
+
+```systemverilog
+assign JumpEn = (moduleIn.isJump|(moduleIn.isBranch&moduleIn.flagResult)) & moduleIn.valid;
+assign JumpAddr = {moduleIn.aluOut[63:1],1'b0};
+```
+在 `decode` 和 `execute` 使用以下方法使指令作废
+    
+```systemverilog
+moduleOut.valid <= moduleIn.valid & ~JumpEn;
+```
+
+对于 Fetch 阶段的修改：增加
+```systemverilog
+if(JumpEn) begin
+    moduleOut.valid <= 0;
+    curPC <= JumpAddr;
+    nextPC <= JumpAddr + 4;
+    ibus_req.addr <= JumpAddr;
+    ibus_req.valid <= 1;
+    instr_ok <= 0;
+end
+```
+
+### JUMP
+
+注意到需要在 ALU 中计算一个地址用来跳转。但是写回的值不是 ALU 的结果，需要做特殊处理。
+
+## 遇到的问题
+
+大致思路是对的，没有遇到什么特殊的问题，~~只是出现了一点点由于编码时的疏忽产生的小问题（主要是在 `fetch` 已经在取指令了而总线还没有返回，这时候想要跳转需要等待总线空闲再进行，这里解决冲突的时候出现了一点小问题），对照波形图进行修改即可。~~
+
+注意到我们修改了跳转的逻辑，上述问题仅在修改前出现。
+
+## 性能优化
+
+第一版的逻辑是这样：
+
+```mermaid
+timeline
+    title Solving Jump Hazard
+    cycle1: A fetch
+    cycle2: A decode
+          : B fetch
+    cycle3: A execute
+          : Bubble
+          : B fetch
+    cycle4: A memory
+          : Bubble
+          : B decode
+          : C ...
+    cycle5: A writeback
+          : Bubble 这里必须是 Bubble 否则有副作用
+          : B execute [Invalid If Jump]
+          : C ... [Invalid If Jump]
+```
+
+并且 `writeback` 是在**上升沿之后**才发送信号给 `fetch` 的，此时 `fetch` 已经在取指令了，因此必须等现在这个指令取完（其实毫无意义，因为这个指令已经无效了）才能取跳转后的指令。
+
+并且如果你去看修改之前的描述，你就会发现为了实现这个逻辑，逻辑是非常复杂的。
+
+修改如下：
+
+```mermaid
+timeline
+    title NO Jump Hazard V2
+    cycle1: A fetch
+    cycle2: A decode
+          : B fetch
+    cycle3: A execute
+          : B decode
+          : C fetch
+    cycle4: A memory 跳转发生在此刻
+          : B execute
+          : C decode
+          : D fetch
+    cycle5: A writeback
+          : B memory [Invalid If Jump]
+          : C execute [Invalid If Jump]
+          : D decode [Invalid If Jump]
+```
+
+因此，这样优化带来两个好处：
+
+- 如果跳转，减少一次无效的访存时间（取指）
+- 如果不跳转，减少一个 Bubble （也是减少一次无效的访存时间）
+
+## 总结
+
+其实这里的 branch 使用了**静态分支预测**（其实就是不预测），默认他不跳转，后面继续往里塞指令，如果跳转就把前面的指令清掉。
+
+此代码也可以跑 `extra` 测试，但其实乘除法的实现直接使用了乘号，在 verilator 中使用是没有问题的，但在 FPGA 中乘号的逻辑门太多了，必须要实现多周期的乘法才能降低周期。但由于乘除法的实现并不是课程要求的一部分，因此暂且这样，等到上板如果影响性能就去掉乘除法。
+
+本人目前有一些乘除法实现的思路，也就是使用协处理器，并且协处理器正常不阻塞正常处理器的执行（除非对结果有依赖）。
+
+# 过期的内容
+
+### BRANCH
+
 对于 branch 指令，我们需要在 ALU 中计算出内存地址（加法），注意这条指令虽然用了 ALU，但并不需要写回。
 
 由于 jump 指令需要写回，我们将跳转统一放在 `writeback` 中进行。因此跳转指令就都存在一个问题：进入到了 `writeback` 阶段，但其后一条指令已经进入了 `memory` 阶段并产生副作用了。因此我们必须类似于 load，在 `decode` 阶段进行判断，如果是一个跳转指令，则让 `fetch` 等待一个周期（相当于插入一个 nop）。
@@ -165,19 +272,3 @@ moduleOut.valid <= moduleIn.valid & ~JumpEn;
 ```
 
 也就是说，如果需要跳转，则将 `decode` 和 `execute` 此时的指令无效。
-
-### JUMP
-
-注意到需要在 ALU 中计算一个地址用来跳转。但是写回的值不是 ALU 的结果，需要做特殊处理。
-
-## 遇到的问题
-
-大致思路是对的，没有遇到什么特殊的问题，只是出现了一点点由于编码时的疏忽产生的小问题（主要是在 `fetch` 已经在取指令了而总线还没有返回，这时候想要跳转需要等待总线空闲再进行，这里解决冲突的时候出现了一点小问题），对照波形图进行修改即可。
-
-## 总结
-
-其实这里的 branch 使用了**静态分支预测**（其实就是不预测），默认他不跳转，后面继续往里塞指令，如果跳转就把前面的指令清掉。
-
-此代码也可以跑 `extra` 测试，但其实乘除法的实现直接使用了乘号，在 verilator 中使用是没有问题的，但在 FPGA 中乘号的逻辑门太多了，必须要实现多周期的乘法才能降低周期。但由于乘除法的实现并不是课程要求的一部分，因此暂且这样，等到上板如果影响性能就去掉乘除法。
-
-本人目前有一些乘除法实现的思路，也就是使用协处理器，并且协处理器正常不阻塞正常处理器的执行（除非对结果有依赖）。
