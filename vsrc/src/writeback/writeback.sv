@@ -14,18 +14,11 @@ module writeback import common::*;(
     output u12 CSR_addr,
     output logic CSR_wbEn,
 
-    output logic JumpEn,
-    output u64 JumpAddr,
-
     output logic ok_to_proceed,
     input logic ok_to_proceed_overall
 );
 
 assign ok_to_proceed = ok;
-
-assign JumpEn = (moduleIn.isJump|(moduleIn.isBranch&moduleIn.branchAdopted)) & moduleIn.valid;
-
-assign JumpAddr = {moduleIn.aluOut[63:1],1'b0};
 
 logic ok;
 

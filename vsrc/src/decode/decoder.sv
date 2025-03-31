@@ -39,7 +39,7 @@ u2 useflag; //use which flag
 logic isCSRWrite;
 csr_op_t csr_op;
 
-assign lwHold = (isBranch||isJump||isMemRead) & moduleIn.valid & ~JumpEn;
+assign lwHold = (isMemRead) & moduleIn.valid & ~JumpEn;
 
 maindecoder maindecoder_inst(
     .instr(moduleIn.instr),

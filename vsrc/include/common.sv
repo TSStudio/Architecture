@@ -331,8 +331,6 @@ typedef struct packed {
     u64 memOut;
 
     logic isJump;
-    logic isBranch;
-    logic branchAdopted;
 
     u32 instr;
     u64 instrAddr;

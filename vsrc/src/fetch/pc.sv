@@ -23,7 +23,7 @@ u64 nextPC;
 
 u32 instr_n;
 
-logic instr_ok, jump_ok, jspc_ok;
+logic instr_ok;
 
 initial begin
     curPC = PCINIT;
@@ -33,14 +33,20 @@ initial begin
     moduleOut.valid = 0;
     ok_to_proceed = 0;
     instr_ok = 0;
-    jump_ok = 0;
-    jspc_ok = 0;
 end
 
-assign ok_to_proceed = instr_ok & (~JumpEn | jump_ok);
+assign ok_to_proceed = instr_ok;
 always_ff @(posedge clk or posedge rst) begin
     if(ok_to_proceed_overall) begin
-        if(~lwHold) begin 
+        if(JumpEn) begin
+            moduleOut.valid <= 0;
+
+            curPC <= JumpAddr;
+            nextPC <= JumpAddr + 4;
+            ibus_req.addr <= JumpAddr;
+            ibus_req.valid <= 1;
+            instr_ok <= 0;
+        end else if(~lwHold) begin 
             moduleOut.valid <= 1;
             moduleOut.pc <= curPC;
             moduleOut.pcPlus4 <= curPC+4;
@@ -57,26 +63,11 @@ always_ff @(posedge clk or posedge rst) begin
             ibus_req.valid <= 0;
             instr_ok <= 1;
         end
-        jump_ok <= 0;
-        jspc_ok <= 0;
     end
     if (ibus_resp.addr_ok & ibus_resp.data_ok) begin
         instr_ok <= 1;
         instr_n <= ibus_resp.data;
         ibus_req.valid <= 0;
-    end
-
-    if (JumpEn & ~jspc_ok) begin
-        curPC <= JumpAddr;
-        nextPC <= JumpAddr + 4;
-        jspc_ok <= 1;
-    end
-
-    if(JumpEn & ~jump_ok & instr_ok) begin
-        instr_ok <= 0;
-        jump_ok <= 1;
-        ibus_req.addr <= JumpAddr;
-        ibus_req.valid <= 1;
     end
 end
 

@@ -14,6 +14,9 @@ module memory import common::*;(
     output dbus_req_t dreq,
     input  dbus_resp_t dresp,
 
+    output logic JumpEn,
+    output u64 JumpAddr,
+
     output logic ok_to_proceed,
     input logic ok_to_proceed_overall
 );
@@ -23,6 +26,10 @@ u64 cur_mem_data;
 logic cur_mem_op_started;
 
 assign ok_to_proceed = ~(moduleIn.valid) | ~(moduleIn.isMemRead|moduleIn.isMemWrite) | cur_mem_op_done;
+
+assign JumpEn = (moduleIn.isJump|(moduleIn.isBranch&moduleIn.flagResult)) & moduleIn.valid;
+
+assign JumpAddr = {moduleIn.aluOut[63:1],1'b0};
 
 initial begin
     moduleOut.valid = 0;
@@ -72,9 +79,7 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.isWriteBack <= moduleIn.isWriteBack;
         moduleOut.isMemRead <= moduleIn.isMemRead;
         moduleOut.wd <= moduleIn.wd;
-        moduleOut.isBranch <= moduleIn.isBranch;
         moduleOut.isJump <= moduleIn.isJump;
-        moduleOut.branchAdopted <= moduleIn.flagResult;
         moduleOut.memOut <= dataOut;
         moduleOut.instrAddr <= moduleIn.instrAddr;
         moduleOut.instr <= moduleIn.instr;

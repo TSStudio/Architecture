@@ -130,7 +130,9 @@ memory memory_inst(
     .dreq(dreq),
     .dresp(dresp),
     .ok_to_proceed(o2p_memory),
-    .ok_to_proceed_overall(o2p)
+    .ok_to_proceed_overall(o2p),
+    .JumpEn(JumpEn),
+    .JumpAddr(JumpAddr)
 );
 
 writeback writeback_inst(
@@ -143,8 +145,6 @@ writeback writeback_inst(
     .moduleOut(wb_commit),
     .ok_to_proceed(o2p_writeback),
     .ok_to_proceed_overall(o2p),
-    .JumpEn(JumpEn),
-    .JumpAddr(JumpAddr),
     .CSR_value(CSR_write_value),
     .CSR_addr(CSR_write_addr),
     .CSR_wbEn(CSR_wbEn)
