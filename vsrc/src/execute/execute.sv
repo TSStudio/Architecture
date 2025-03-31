@@ -2,6 +2,7 @@
 `include "include/common.sv"
 `include "src/execute/alu.sv"
 `include "src/execute/mul.sv"
+`include "src/mul_core/mul_core.sv"
 `endif
 
 module execute import common::*;(
@@ -33,7 +34,11 @@ assign ib=moduleIn.srcB==2'b00 ? moduleIn.rs2:
 u64 aluOut;
 u32 aluOut32;
 u64 mulOut;
-u32 mulOut32;
+u64 mulOutInved;
+logic mulinv;
+logic mulready;
+
+mbus_req_t mulReq;
 
 u64 CSR_write_value;
 
@@ -57,15 +62,28 @@ alu alu(
 
 mul mul(
     .clk(clk),
-    .en(mulen),
-    .busy(mulbusy),
-    .newOp(newOp),
     .ia(ia),
     .ib(ib),
-    .mulOp(moduleIn.mulOp[2:0]),
-    .mulOut(mulOut),
-    .mulOut32(mulOut32)
+    .mulOp(moduleIn.mulOp),
+    .req(mulReq),
+    .inv(mulinv)
 );
+
+mul_core mul_core(
+    .clk(clk),
+    .rst(ok_to_proceed_overall),
+    .op_begin(moduleIn.rvm&~req_submitted),
+    .req(mulReq),
+    .busy(mulbusy),
+    .mulOut(mulOut),
+    .ready(mulready),
+    .divZero(divZero)
+);
+
+logic req_submitted;
+logic divZero;
+
+assign mulOutInved = mulinv ? (divZero ? mulOut : ~mulOut+1) : mulOut;
 
 initial begin
     moduleOut.valid = 0;
@@ -76,9 +94,9 @@ u64 datUse;
 always_comb begin
     if(moduleIn.rvm) begin
         if (moduleIn.rv64) begin
-            datUse = {{32{mulOut32[31]}},mulOut32};
+            datUse = {{32{mulOutInved[31]}},mulOutInved[31:0]};
         end else begin
-            datUse = mulOut;
+            datUse = mulOutInved;
         end
     end else begin
         if (moduleIn.rv64) begin
@@ -98,11 +116,7 @@ always_comb begin
     end
 end
 
-logic mulen;
 logic mulbusy;
-logic newOp;
-
-assign mulen = moduleIn.rvm;
 
 assign forwardSource.valid = moduleIn.valid & moduleIn.wd != 0;
 assign forwardSource.isWb = moduleIn.isWriteBack;
@@ -113,7 +127,7 @@ assign csrForwardSource.valid = moduleIn.valid & moduleIn.isCSRWrite;
 assign csrForwardSource.wd = moduleIn.CSR_addr;
 assign csrForwardSource.wdData = CSR_write_value;
 
-assign ok_to_proceed = 1; // always proceed, todo if multiply cannot complete in one cycle
+assign ok_to_proceed = moduleIn.rvm ? mulready : 1;
 
 u3 flags;//0->2 ia<ib (unsigned)(ia<ib) ia=ib
 
@@ -157,11 +171,9 @@ always_ff @(posedge clk  or posedge rst) begin
         moduleOut.CSR_write_value <= CSR_write_value;
         moduleOut.CSR_addr <= moduleIn.CSR_addr;
 
-        newOp <= 1;
-    end
-
-    if(newOp && !ok_to_proceed_overall) begin
-        newOp <= 0;
+        req_submitted <= 0;
+    end else begin
+        req_submitted <= 1;
     end
 end
 

@@ -5,12 +5,9 @@
 module mul import common::*;(
     input logic clk,
     input u64 ia, ib,
-    input logic en,
-    input logic newOp,
-    output logic busy,
-    input u3 mulOp,
-    output u64 mulOut,
-    output u32 mulOut32
+    input u4 mulOp,
+    output mbus_req_t req,
+    output logic inv
 );
 //ops:
 // 000: mul
@@ -23,8 +20,6 @@ module mul import common::*;(
 // 101: divuw
 // 110: remw
 // 111: remuw
-
-assign busy = 0;
 
 u64 ia_inv, ib_inv;
 assign ia_inv = (~ia) + 1;
@@ -56,103 +51,37 @@ assign ib_abs = ib_sign ? ib_inv : ib;
 assign ia32_abs = ia32_sign ? ia32_inv : ia32;
 assign ib32_abs = ib32_sign ? ib32_inv : ib32;
 
-u64 out_tmp;
-u32 out32_tmp;
-
 always_comb begin
-    case(mulOp)
+    case(mulOp[2:0])
         3'b000: begin
-            mulOut = ia * ib;
-            mulOut32 = ia32 * ib32;
-            out_tmp = 0;
-            out32_tmp = 0;
+            req = {~mulOp[3], MUL, ia, ia, ib};
+            inv = 0;
         end
         3'b100: begin
-            if (ib == 0) begin
-                mulOut = ~0;
-                mulOut32 = ~0;
-                out_tmp = 0;
-                out32_tmp = 0;
-            end else begin
-                if (ib32 == 0) begin 
-                    out_tmp = ia_abs / ib_abs;
-                    mulOut = out_sign ? (~out_tmp) + 1 : out_tmp;
-                    mulOut32 = ~0;
-                    out32_tmp = 0;
-                end else begin
-                    out_tmp = ia_abs / ib_abs;
-                    out32_tmp = ia32_abs / ib32_abs;
-                    mulOut = out_sign ? (~out_tmp) + 1 : out_tmp;
-                    mulOut32 = out32_sign ? (~out32_tmp) + 1 : out32_tmp;
-                end
-            end
+            if(mulOp[3])
+                req = {~mulOp[3], DIV, {32'b0,ia32_abs}, ia, {32'b0,ib32_abs}};
+            else
+                req = {~mulOp[3], DIV, ia_abs, ia, ib_abs};
+            inv = mulOp[3] ? out32_sign : out_sign;
         end
         3'b101: begin
-            if (ib == 0) begin
-                mulOut = ~0;
-                mulOut32 = ~0;
-                out_tmp = 0;
-                out32_tmp = 0;
-            end else begin
-                if (ib32 == 0) begin
-                    mulOut = ia / ib;
-                    out_tmp = 0;
-                    mulOut32 = ~0;
-                    out32_tmp = 0;
-                end else begin
-                    mulOut = ia / ib;
-                    mulOut32 = ia32 / ib32;
-                    out_tmp = 0;
-                    out32_tmp = 0;
-                end
-            end
+            req = {~mulOp[3], DIV, ia, ia, ib};
+            inv = 0;
         end
         3'b110: begin
-            if(ib==0) begin
-                mulOut = ia;
-                mulOut32 = ia32;
-                out_tmp = 0;
-                out32_tmp = 0;
-            end else begin
-                if(ib32==0) begin
-                    out_tmp = ia_abs % ib_abs;
-                    mulOut = ia_sign ? (~out_tmp) + 1 : out_tmp;
-
-                    mulOut32 = ia32;
-                    out32_tmp = 0;
-                end else begin
-                    out_tmp = ia_abs % ib_abs;
-                    mulOut = ia_sign ? (~out_tmp) + 1 : out_tmp;
-                    out32_tmp = ia32_abs % ib32_abs;
-                    mulOut32 = ia32_sign ? (~out32_tmp) + 1 : out32_tmp;
-                end
-            end
+            if(mulOp[3])
+                req = {~mulOp[3], REM, {32'b0,ia32_abs}, ia, {32'b0,ib32_abs}};
+            else
+                req = {~mulOp[3], REM, ia_abs, ia, ib_abs};
+            inv = mulOp[3] ? ia32_sign : ia_sign;
         end
         3'b111: begin
-            if (ib == 0) begin
-                mulOut = ia;
-                mulOut32 = ia32;
-                out_tmp = 0;
-                out32_tmp = 0;
-            end else begin
-                if (ib32 == 0) begin
-                    mulOut = ia % ib;
-                    out_tmp = 0;
-                    mulOut32 = ia32;
-                    out32_tmp = 0;
-                end else begin
-                    mulOut = ia % ib;
-                    mulOut32 = ia32 % ib32;
-                    out_tmp = 0;
-                    out32_tmp = 0;
-                end
-            end
+            req = {~mulOp[3], REM, ia, ia, ib};
+            inv = 0;
         end
         default: begin
-            mulOut = 0;
-            mulOut32 = 0;
-            out_tmp = 0;
-            out32_tmp = 0;
+            req = {~mulOp[3], MUL, ia, ia, ib};
+            inv = 0;
         end
         
     endcase

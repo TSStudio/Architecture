@@ -370,5 +370,19 @@ typedef struct packed {
     u64 wdData;
 } CSR_FORWARD_SOURCE;
 
+typedef enum u2 {
+    MUL = 2'b00,
+    DIV = 2'b01,
+    REM = 2'b10
+} mul_op_t;
+
+typedef struct packed {
+    logic dw; // 0: 32, 1: 64
+    mul_op_t op; // operation
+    u64 ia; // operand A
+    u64 ia_orig; // original operand A
+    u64 ib; // operand B
+} mbus_req_t;
+
 endpackage
 `endif
