@@ -5,6 +5,8 @@
 
 **需要注意的是，在 3 月 31 日本人对跳转逻辑做了一些修改，此文档在最后保留了修改前的相关说明**
 
+**需要注意的是，在 3 月 31 日本人实现了乘除法，此文档含有相关说明**
+
 ## 思路与过程
 
 对于任务中的这么多指令，其实可以分成几种：
@@ -210,9 +212,63 @@ timeline
 
 其实这里的 branch 使用了**静态分支预测**（其实就是不预测），默认他不跳转，后面继续往里塞指令，如果跳转就把前面的指令清掉。
 
-此代码也可以跑 `extra` 测试，但其实乘除法的实现直接使用了乘号，在 verilator 中使用是没有问题的，但在 FPGA 中乘号的逻辑门太多了，必须要实现多周期的乘法才能降低周期。但由于乘除法的实现并不是课程要求的一部分，因此暂且这样，等到上板如果影响性能就去掉乘除法。
+~~此代码也可以跑 `extra` 测试，但其实乘除法的实现直接使用了乘号，在 verilator 中使用是没有问题的，但在 FPGA 中乘号的逻辑门太多了，必须要实现多周期的乘法才能降低周期。但由于乘除法的实现并不是课程要求的一部分，因此暂且这样，等到上板如果影响性能就去掉乘除法。~~
 
-本人目前有一些乘除法实现的思路，也就是使用协处理器，并且协处理器正常不阻塞正常处理器的执行（除非对结果有依赖）。
+~~本人目前有一些乘除法实现的思路，也就是使用协处理器，并且协处理器正常不阻塞正常处理器的执行（除非对结果有依赖）。~~
+
+3.31 日更新：乘除法的实现已经完成，使用了多周期的乘除法实现。
+
+# Extra
+
+## 乘法
+
+考虑竖式计算。实际上，假如我们有 $a$ 和 $b$，那么实际上
+
+$a\times b = a[0]\times b + a[1]\times b\times 2 + a[2]\times b\times 4 + a[3]\times b\times 8 + \ldots$
+
+我们可以将这堆计算分散到不同的周期中去完成。
+
+目前采取的方式是每个周期计算 4 位的乘法。
+
+用一个 $state$ 来表示当前的状态，`state` 取值为：$0,4,8,12,\ldots$
+
+```systemverilog
+mul_temp <= mul_temp + ((req.ia[state]*req.ib) << state)
+                     + ((req.ia[state+1]*req.ib) << (state+1))
+                     + ((req.ia[state+2]*req.ib) << (state+2))
+                     + ((req.ia[state+3]*req.ib) << (state+3));
+```
+
+这样，对于一个 32 位的乘法，可以在 8 个周期内完成。对于 64 位的乘法，可以在 16 个周期内完成。
+
+## 除法与余数
+
+首先我们将所有的**有符号计算**都转化为无符号的。也就是对于操作数 $a$ 和 $b$，如果它是负数，就变成其绝对值。
+
+- 如果原来的 $a$ 和 $b$ 一负一正，商就要取反。否则就不需要取反。
+- 余数的符号和被除数相同（这实际上不符合数学的定义，但符合 C 语言的定义）。
+
+然后使用“试减法”来实现除法。也就是不断地将被除数减去除数，直到被除数小于除数为止。
+
+```systemverilog
+if(rem_temp>>(state-1) >= ib_temp) begin
+    div_temp <= div_temp + (1<<(state-1));
+    rem_temp <= rem_temp - (ib_temp<<(state-1));
+end
+```
+此处 `state` 表示已经处理过结果上的哪一位（从高位到低位）。
+
+需要特判除数为 0 的情况，直接返回 -1（商），$a$（余数）。
+
+32 位除法可以在 32 个周期内完成，64 位除法可以在 64 个周期内完成。
+
+## 连线与控制
+
+容易发现，这应该通过一个状态机来实现。注意到，我们直接让状态为 0 表示不在计算，状态不为 0 即为在计算。
+
+注意到，除 0 情况是立即返回。因此增加一个 `ready` 信号表示计算结束（这与 0 不同，0 可能表示尚未计算）。在计算过程中如果下一个状态是 0 则将 `ready` 置为 1。
+
+另外，`rst` 信号（可以将 `ready` 置为 0）是使用了 `ok_to_proceed_overall`（整个流水线的前进信号）。
 
 # 过期的内容
 
@@ -272,3 +328,7 @@ moduleOut.valid <= moduleIn.valid & ~JumpEn;
 ```
 
 也就是说，如果需要跳转，则将 `decode` 和 `execute` 此时的指令无效。
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true},{left: '$', right: '$', display: false},{left: '\\(', right: '\\)', display: false},{left: '\\[', right: '\\]', display: true}],throwOnError : false});"></script>
