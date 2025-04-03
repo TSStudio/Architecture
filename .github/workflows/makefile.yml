@@ -43,5 +43,5 @@ jobs:
         make test-lab1-extra
         make test-lab2
         make test-lab3
-        make test-lab3-extra
+        make test-lab3-extra TSET=all
       
