@@ -364,12 +364,6 @@ typedef struct packed {
     u64 wdData;
 } FORWARD_SOURCE;
 
-typedef struct packed {
-    logic valid;
-    u12 wd;
-    u64 wdData;
-} CSR_FORWARD_SOURCE;
-
 typedef enum u2 {
     MUL = 2'b00,
     DIV = 2'b01,

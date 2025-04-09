@@ -13,7 +13,6 @@ module decoder import common::*;(
     input u64 rs1Data, rs2Data,
 
     input FORWARD_SOURCE fwdSrc1, fwdSrc2,
-    input CSR_FORWARD_SOURCE csrFwdSrc1, csrFwdSrc2,
 
     output logic ok_to_proceed,
     input logic ok_to_proceed_overall,
@@ -77,11 +76,6 @@ assign rs1DataOutS2 = fwdSrc2.valid & fwdSrc2.isWb & fwdSrc2.wd == rs1 ? fwdSrc2
 assign rs2DataOutS1 = fwdSrc1.valid & fwdSrc1.isWb & fwdSrc1.wd == rs2 ? fwdSrc1.wdData : rs2Data;
 assign rs2DataOutS2 = fwdSrc2.valid & fwdSrc2.isWb & fwdSrc2.wd == rs2 ? fwdSrc2.wdData : rs2DataOutS1;
 
-u64 CSRoutS1, CSRoutS2;
-
-assign CSRoutS1 = csrFwdSrc1.valid & csrFwdSrc1.wd == CSR_addr ? csrFwdSrc1.wdData : CSR_value;
-assign CSRoutS2 = csrFwdSrc2.valid & csrFwdSrc2.wd == CSR_addr ? csrFwdSrc2.wdData : CSRoutS1;
-
 assign ok_to_proceed = 1; // always proceed
 
 always_ff @(posedge clk or posedge rst) begin
@@ -119,7 +113,7 @@ always_ff @(posedge clk or posedge rst) begin
 
         moduleOut.isCSRWrite <= isCSRWrite;
         moduleOut.CSR_addr <= CSR_addr;
-        moduleOut.CSR_value <= CSRoutS2;
+        moduleOut.CSR_value <= CSR_value;
         moduleOut.csr_op <= csr_op;
 
         moduleOut.instrAddr <= moduleIn.instrAddr;

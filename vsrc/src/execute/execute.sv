@@ -10,7 +10,6 @@ module execute import common::*;(
     input REG_ID_EX moduleIn,
     output REG_EX_MEM moduleOut,
     output FORWARD_SOURCE forwardSource,
-    output CSR_FORWARD_SOURCE csrForwardSource,
 
     output logic ok_to_proceed,
     input logic ok_to_proceed_overall,
@@ -122,10 +121,6 @@ assign forwardSource.valid = moduleIn.valid & moduleIn.wd != 0;
 assign forwardSource.isWb = moduleIn.isWriteBack;
 assign forwardSource.wd = moduleIn.wd;
 assign forwardSource.wdData = datUse;
-
-assign csrForwardSource.valid = moduleIn.valid & moduleIn.isCSRWrite;
-assign csrForwardSource.wd = moduleIn.CSR_addr;
-assign csrForwardSource.wdData = CSR_write_value;
 
 assign ok_to_proceed = moduleIn.rvm ? mulready : 1;
 

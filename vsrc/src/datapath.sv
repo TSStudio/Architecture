@@ -26,8 +26,6 @@ REG_MEM_WB mem_wb;
 
 FORWARD_SOURCE fwd_EX_EX, fwd_MEM_EX;
 
-CSR_FORWARD_SOURCE csr_fwd_EX_EX, csr_fwd_MEM_EX;
-
 u5 rs1,rs2,wd;
 u64 rs1Data,rs2Data,wdData;
 logic wbEn;
@@ -99,8 +97,6 @@ decoder decoder_inst(
     .rs2Data(rs2Data),
     .fwdSrc1(fwd_MEM_EX),
     .fwdSrc2(fwd_EX_EX),
-    .csrFwdSrc1(csr_fwd_MEM_EX),
-    .csrFwdSrc2(csr_fwd_EX_EX),
     .ok_to_proceed(o2p_decode),
     .ok_to_proceed_overall(o2p),
     .CSR_addr(CSR_addr),
@@ -114,7 +110,6 @@ execute execute_inst(
     .moduleIn(id_ex),
     .moduleOut(ex_mem),
     .forwardSource(fwd_EX_EX),
-    .csrForwardSource(csr_fwd_EX_EX),
     .ok_to_proceed(o2p_execute),
     .ok_to_proceed_overall(o2p),
     .JumpEn(JumpEn)
@@ -126,7 +121,6 @@ memory memory_inst(
     .moduleIn(ex_mem),
     .moduleOut(mem_wb),
     .forwardSource(fwd_MEM_EX),
-    .csrForwardSource(csr_fwd_MEM_EX),
     .dreq(dreq),
     .dresp(dresp),
     .ok_to_proceed(o2p_memory),
