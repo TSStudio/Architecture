@@ -26,9 +26,9 @@ logic cur_mem_op_started;
 
 assign ok_to_proceed = ~(moduleIn.valid) | ~(moduleIn.isMemRead|moduleIn.isMemWrite) | cur_mem_op_done;
 
-assign JumpEn = (moduleIn.isJump|(moduleIn.isBranch&moduleIn.flagResult)) & moduleIn.valid;
+assign JumpEn = (moduleIn.isJump|(moduleIn.isBranch&moduleIn.flagResult)|moduleIn.isCSRWrite) & moduleIn.valid;
 
-assign JumpAddr = {moduleIn.aluOut[63:1],1'b0};
+assign JumpAddr = moduleIn.isCSRWrite? moduleIn.pcPlus4 : {moduleIn.aluOut[63:1],1'b0};
 
 initial begin
     moduleOut.valid = 0;
