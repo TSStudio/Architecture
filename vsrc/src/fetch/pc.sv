@@ -26,48 +26,52 @@ u32 instr_n;
 logic instr_ok;
 
 initial begin
-    curPC = PCINIT;
-    nextPC = PCINIT+4;
-    ibus_req.addr = curPC;
-    ibus_req.valid = 1;
-    moduleOut.valid = 0;
-    ok_to_proceed = 0;
-    instr_ok = 0;
+    
 end
 
 assign ok_to_proceed = instr_ok;
+
 always_ff @(posedge clk or posedge rst) begin
-    if(ok_to_proceed_overall) begin
-        if(JumpEn) begin
-            moduleOut.valid <= 0;
+    if(rst) begin
+        curPC <= PCINIT;
+        nextPC <= PCINIT+4;
+        ibus_req.addr <= curPC;
+        ibus_req.valid <= 1;
+        moduleOut.valid <= 0;
+        instr_ok <= 0;
+    end else begin 
+        if(ok_to_proceed_overall) begin
+            if(JumpEn) begin
+                moduleOut.valid <= 0;
 
-            curPC <= JumpAddr;
-            nextPC <= JumpAddr + 4;
-            ibus_req.addr <= JumpAddr;
-            ibus_req.valid <= 1;
-            instr_ok <= 0;
-        end else if(~lwHold) begin 
-            moduleOut.valid <= 1;
-            moduleOut.pc <= curPC;
-            moduleOut.pcPlus4 <= curPC+4;
-            moduleOut.instr <= instr_n;
-            moduleOut.instrAddr <= curPC;
+                curPC <= JumpAddr;
+                nextPC <= JumpAddr + 4;
+                ibus_req.addr <= JumpAddr;
+                ibus_req.valid <= 1;
+                instr_ok <= 0;
+            end else if(~lwHold) begin 
+                moduleOut.valid <= 1;
+                moduleOut.pc <= curPC;
+                moduleOut.pcPlus4 <= curPC+4;
+                moduleOut.instr <= instr_n;
+                moduleOut.instrAddr <= curPC;
 
-            curPC <= nextPC;
-            ibus_req.addr <= nextPC;
-            ibus_req.valid <= 1;
-            instr_ok <= 0;
-            nextPC <= nextPC + 4;
-        end else begin
-            moduleOut.valid <= 0;
-            ibus_req.valid <= 0;
-            instr_ok <= 1;
+                curPC <= nextPC;
+                ibus_req.addr <= nextPC;
+                ibus_req.valid <= 1;
+                instr_ok <= 0;
+                nextPC <= nextPC + 4;
+            end else begin
+                moduleOut.valid <= 0;
+                ibus_req.valid <= 0;
+                instr_ok <= 1;
+            end
         end
-    end
-    if (ibus_resp.addr_ok & ibus_resp.data_ok) begin
-        instr_ok <= 1;
-        instr_n <= ibus_resp.data;
-        ibus_req.valid <= 0;
+        if (ibus_resp.addr_ok & ibus_resp.data_ok) begin
+            instr_ok <= 1;
+            instr_n <= ibus_resp.data;
+            ibus_req.valid <= 0;
+        end
     end
 end
 

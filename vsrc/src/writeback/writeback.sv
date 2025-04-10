@@ -23,11 +23,9 @@ assign ok_to_proceed = ok;
 logic ok;
 
 always_ff @(posedge clk or posedge rst) begin
-    if(ok==0) begin
-        ok <= 1;
-    end
 
     if(rst) begin
+        ok <= 1;
         // do nothing
     end else if(ok_to_proceed_overall) begin
         moduleOut.valid <= moduleIn.valid;
@@ -60,6 +58,9 @@ always_ff @(posedge clk or posedge rst) begin
         end
         ok <= 0;
     end else begin
+        if(ok==0) begin
+            ok <= 1;
+        end
         if(moduleIn.isWriteBack & moduleIn.valid) begin
             // write back
             wbEn <= 1;

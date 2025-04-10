@@ -84,10 +84,6 @@ logic divZero;
 
 assign mulOutInved = mulinv ? (divZero ? mulOut : ~mulOut+1) : mulOut;
 
-initial begin
-    moduleOut.valid = 0;
-end
-
 u64 datUse;
 
 always_comb begin
@@ -122,7 +118,7 @@ assign forwardSource.isWb = moduleIn.isWriteBack;
 assign forwardSource.wd = moduleIn.wd;
 assign forwardSource.wdData = datUse;
 
-assign ok_to_proceed = moduleIn.rvm ? mulready : 1;
+assign ok_to_proceed = (moduleIn.rvm ? mulready : 1) | ~moduleIn.valid;
 
 u3 flags;//0->2 ia<ib (unsigned)(ia<ib) ia=ib
 

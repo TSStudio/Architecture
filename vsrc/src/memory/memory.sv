@@ -30,11 +30,6 @@ assign JumpEn = (moduleIn.isJump|(moduleIn.isBranch&moduleIn.flagResult)|moduleI
 
 assign JumpAddr = moduleIn.isCSRWrite? moduleIn.pcPlus4 : {moduleIn.aluOut[63:1],1'b0};
 
-initial begin
-    moduleOut.valid = 0;
-    cur_mem_op_done = 0;
-end
-
 assign forwardSource.valid = moduleIn.valid & moduleIn.wd != 0;
 assign forwardSource.isWb = moduleIn.isWriteBack;
 assign forwardSource.wd = moduleIn.wd;
@@ -67,43 +62,46 @@ u64 dataOut;
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         moduleOut.valid <= 0;
-    end else if(ok_to_proceed_overall) begin
-        moduleOut.valid <= moduleIn.valid;
-        moduleOut.aluOut <= moduleIn.aluOut;
-        moduleOut.pcPlus4 <= moduleIn.pcPlus4;
-        moduleOut.isWriteBack <= moduleIn.isWriteBack;
-        moduleOut.isMemRead <= moduleIn.isMemRead;
-        moduleOut.wd <= moduleIn.wd;
-        moduleOut.isJump <= moduleIn.isJump;
-        moduleOut.memOut <= dataOut;
-        moduleOut.instrAddr <= moduleIn.instrAddr;
-        moduleOut.instr <= moduleIn.instr;
-
-        moduleOut.isMem <= moduleIn.isMemRead | moduleIn.isMemWrite;
-        moduleOut.memAddr <= moduleIn.aluOut;
-
-        moduleOut.isCSRWrite <= moduleIn.isCSRWrite;
-        moduleOut.CSR_write_value <= moduleIn.CSR_write_value;
-        moduleOut.CSR_addr <= moduleIn.CSR_addr;
-
         cur_mem_op_done <= 0;
-        cur_mem_op_started <= 0;
-    end
-    if(dresp.addr_ok & dresp.data_ok & cur_mem_op_started) begin
-        cur_mem_data <= dresp.data;
-        cur_mem_op_done <= 1;
-        dreq.valid <= 0;
-    end
-    if(moduleIn.valid & (moduleIn.isMemRead|moduleIn.isMemWrite) & ~cur_mem_op_started) begin
-        cur_mem_op_started <= 1;
-        dreq.addr <= addr;
-        dreq.valid <= 1;
-        dreq.size <= msize;
-        if(moduleIn.isMemRead) begin
-            dreq.strobe <= 0;
-        end else begin
-            dreq.strobe <= strobe;
-            dreq.data <= data;
+    end else begin 
+        if(ok_to_proceed_overall) begin
+            moduleOut.valid <= moduleIn.valid;
+            moduleOut.aluOut <= moduleIn.aluOut;
+            moduleOut.pcPlus4 <= moduleIn.pcPlus4;
+            moduleOut.isWriteBack <= moduleIn.isWriteBack;
+            moduleOut.isMemRead <= moduleIn.isMemRead;
+            moduleOut.wd <= moduleIn.wd;
+            moduleOut.isJump <= moduleIn.isJump;
+            moduleOut.memOut <= dataOut;
+            moduleOut.instrAddr <= moduleIn.instrAddr;
+            moduleOut.instr <= moduleIn.instr;
+
+            moduleOut.isMem <= moduleIn.isMemRead | moduleIn.isMemWrite;
+            moduleOut.memAddr <= moduleIn.aluOut;
+
+            moduleOut.isCSRWrite <= moduleIn.isCSRWrite;
+            moduleOut.CSR_write_value <= moduleIn.CSR_write_value;
+            moduleOut.CSR_addr <= moduleIn.CSR_addr;
+
+            cur_mem_op_done <= 0;
+            cur_mem_op_started <= 0;
+        end
+        if(dresp.addr_ok & dresp.data_ok & cur_mem_op_started) begin
+            cur_mem_data <= dresp.data;
+            cur_mem_op_done <= 1;
+            dreq.valid <= 0;
+        end
+        if(moduleIn.valid & (moduleIn.isMemRead|moduleIn.isMemWrite) & ~cur_mem_op_started) begin
+            cur_mem_op_started <= 1;
+            dreq.addr <= addr;
+            dreq.valid <= 1;
+            dreq.size <= msize;
+            if(moduleIn.isMemRead) begin
+                dreq.strobe <= 0;
+            end else begin
+                dreq.strobe <= strobe;
+                dreq.data <= data;
+            end
         end
     end
 end
