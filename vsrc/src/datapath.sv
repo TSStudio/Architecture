@@ -16,7 +16,8 @@ module datapath import common::*;(
     output dbus_req_t dreq,
     input  dbus_resp_t dresp,
     output WB_COMMIT wb_commit,
-    output u64 regs [31:0]
+    output u64 regs [31:0],
+    output u64 csrs [31:0]
 );
 
 REG_IF_ID if_id;
@@ -66,10 +67,10 @@ csr csr_inst(
     .rst(rst),
     .read_target(CSR_addr),
     .read_data(CSR_value),
+    .wdEn(CSR_wbEn),
     .write_target(CSR_write_addr),
     .write_data(CSR_write_value),
-    .csrs(),
-    .wdEn(CSR_wbEn)
+    .csrs(csrs)
 );
 
 programCounter pc_inst(

@@ -3,10 +3,11 @@
 
 `ifdef VERILATOR
 `include "include/common.sv"
+`include "include/csr.sv"
 `include "src/datapath.sv"
 `endif
 
-module core import common::*;(
+module core import common::*; import csr_pkg::*;(
 	input  logic       clk, reset,
 	output ibus_req_t  ireq,
 	input  ibus_resp_t iresp,
@@ -17,6 +18,7 @@ module core import common::*;(
 
 WB_COMMIT wb_commit;
 u64 regs[31:0];
+u64 csrs[31:0];
 datapath datapath_inst(
 	.clk(clk),
 	.rst(reset),
@@ -25,13 +27,14 @@ datapath datapath_inst(
 	.dreq(dreq),
 	.dresp(dresp),
 	.wb_commit(wb_commit),
-	.regs(regs)
+	.regs(regs),
+	.csrs(csrs)
 );
 
 `ifdef VERILATOR
 	DifftestInstrCommit DifftestInstrCommit(
 		.clock              (clk),
-		.coreid             (0),
+		.coreid             (csrs[4][7:0]),
 		.index              (0),
 		.valid              (wb_commit.valid),
 		.pc                 (wb_commit.instrAddr),
@@ -46,7 +49,7 @@ datapath datapath_inst(
 
 	DifftestArchIntRegState DifftestArchIntRegState (
 		.clock              (clk),
-		.coreid             (0),
+		.coreid             (csrs[4][7:0]),
 		.gpr_0              (regs[0]),
 		.gpr_1              (regs[1]),
 		.gpr_2              (regs[2]),
@@ -83,7 +86,7 @@ datapath datapath_inst(
 
     DifftestTrapEvent DifftestTrapEvent(
 		.clock              (clk),
-		.coreid             (0),
+		.coreid             (csrs[4][7:0]),
 		.valid              (0),
 		.code               (0),
 		.pc                 (0),
@@ -93,25 +96,25 @@ datapath datapath_inst(
 
 	DifftestCSRState DifftestCSRState(
 		.clock              (clk),
-		.coreid             (0),
+		.coreid             (csrs[4][7:0]),
 		.priviledgeMode     (3),
-		.mstatus            (0),
-		.sstatus            (0 /* mstatus & SSTATUS_MASK */),
-		.mepc               (0),
-		.sepc               (0),
-		.mtval              (0),
-		.stval              (0),
-		.mtvec              (0),
-		.stvec              (0),
-		.mcause             (0),
-		.scause             (0),
-		.satp               (0),
-		.mip                (0),
-		.mie                (0),
-		.mscratch           (0),
-		.sscratch           (0),
-		.mideleg            (0),
-		.medeleg            (0)
+		.mstatus            (csrs[0]),
+		.sstatus            (csrs[0] & SSTATUS_MASK),
+		.mepc               (csrs[6]),
+		.sepc               (csrs[18]),
+		.mtval              (csrs[10]),
+		.stval              (csrs[20]),
+		.mtvec              (csrs[3]),
+		.stvec              (csrs[15]),
+		.mcause             (csrs[8]),
+		.scause             (csrs[19]),
+		.satp               (csrs[7]),
+		.mip                (csrs[2]),
+		.mie                (csrs[1]),
+		.mscratch           (csrs[5]),
+		.sscratch           (csrs[17]),
+		.mideleg            (csrs[14]),
+		.medeleg            (csrs[13])
 	);
 `endif
 endmodule

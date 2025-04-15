@@ -56,6 +56,7 @@ always_ff @(posedge clk or posedge rst) begin
                 moduleOut.memAddr <= moduleIn.memAddr;
             end
         end
+        wbEn <= 0;
         ok <= 0;
     end else begin
         if(ok==0) begin

@@ -84,7 +84,7 @@ assign immtype =
                 (instr[6:0]==7'b1100011)? 3'b010:
                 (instr[6:0]==7'b0110111 || instr[6:0]==7'b0010111)? 3'b100: // U-type
                 (instr[6:0]==7'b1101111)? 3'b011: // J-type
-                (instr[6:0]==7'b1110011 && instr[14]==1'b1) ? 3'b101: // CSR-I
+                (instr[6:0]==7'b1110011) ? 3'b101: // CSR-I
                 3'b111;
 
 assign optype =
@@ -114,6 +114,8 @@ assign memMode[3] = isMemWrite;
 
 assign csr_op = csr_op_t'(instr[14:12]);
 assign isCSRWrite = (instr[6:0]==7'b1110011)? 1:0;
+
+assign CSR_addr = instr[31:20];
 
 signextend signextend_inst(
     .instr(instr),
