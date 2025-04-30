@@ -18,6 +18,7 @@ module maindecoder import common::*;(
     output logic isCSRWrite,
     output csr_op_t csr_op,
     output u12 CSR_addr,
+    output trap_t trap,
 
     output logic cns, cmpSrcB, flagInv,
     output u2 useflag //use which flag
@@ -116,6 +117,12 @@ assign csr_op = csr_op_t'(instr[14:12]);
 assign isCSRWrite = (instr[6:0]==7'b1110011)? 1:0;
 
 assign CSR_addr = instr[31:20];
+
+assign trap = 
+    instr[31:20]==12'b000000000000 ? ECALL :
+    instr[31:20]==12'b000000000001 ? EBREAK :
+    instr[31:20]==12'b001100000010 ? MRET :
+    UNKNOWN;
 
 signextend signextend_inst(
     .instr(instr),

@@ -37,6 +37,7 @@ u2 useflag; //use which flag
 
 logic isCSRWrite;
 csr_op_t csr_op;
+trap_t trap;
 
 assign lwHold = (isMemRead) & moduleIn.valid & ~JumpEn;
 
@@ -65,7 +66,8 @@ maindecoder maindecoder_inst(
 
     .isCSRWrite(isCSRWrite),
     .csr_op(csr_op),
-    .CSR_addr(CSR_addr)
+    .CSR_addr(CSR_addr),
+    .trap(trap)
 );
 
 u64 rs1DataOutS1, rs1DataOutS2, rs2DataOutS1, rs2DataOutS2;
@@ -115,6 +117,7 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.CSR_addr <= CSR_addr;
         moduleOut.CSR_value <= CSR_value;
         moduleOut.csr_op <= csr_op;
+        moduleOut.trap <= trap;
 
         moduleOut.instrAddr <= moduleIn.instrAddr;
         moduleOut.instr <= moduleIn.instr;

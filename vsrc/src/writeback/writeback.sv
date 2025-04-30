@@ -14,6 +14,17 @@ module writeback import common::*;(
     output u12 CSR_addr,
     output logic CSR_wbEn,
 
+    output u64 CSR_value2,
+    output u12 CSR_addr2,
+    output logic CSR_wbEn2,
+
+    output u64 CSR_value3,
+    output u12 CSR_addr3,
+    output logic CSR_wbEn3,
+
+    output logic priviledgeModeWrite,
+    output u2 newPriviledgeMode,
+
     output logic ok_to_proceed,
     input logic ok_to_proceed_overall
 );
@@ -72,12 +83,22 @@ always_ff @(posedge clk or posedge rst) begin
         end else begin
             wbEn <= 0;
         end
-        if(moduleIn.isCSRWrite & moduleIn.valid) begin
-            CSR_wbEn <= 1;
+        if((moduleIn.isCSRWrite|moduleIn.isCSRWrite2) & moduleIn.valid) begin
+            CSR_wbEn <= moduleIn.isCSRWrite;
             CSR_addr <= moduleIn.CSR_addr;
             CSR_value <= moduleIn.CSR_write_value;
+            CSR_wbEn2 <= moduleIn.isCSRWrite2;
+            CSR_addr2 <= moduleIn.CSR_addr2;
+            CSR_value2 <= moduleIn.CSR_write_value2;
         end else begin
             CSR_wbEn <= 0;
+            CSR_wbEn2 <= 0;
+        end
+        if(moduleIn.priviledgeModeWrite & moduleIn.valid) begin
+            priviledgeModeWrite <= 1;
+            newPriviledgeMode <= moduleIn.newPriviledgeMode;
+        end else begin
+            priviledgeModeWrite <= 0;
         end
         moduleOut.valid <= 0;
     end

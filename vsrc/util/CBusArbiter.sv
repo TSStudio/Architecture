@@ -3,6 +3,7 @@
 
 `ifdef VERILATOR
 `include "include/common.sv"
+`include "util/mmu.sv"
 `else
 
 `endif
@@ -22,14 +23,29 @@ module CBusArbiter
     input  cbus_req_t  [MAX_INDEX:0] ireqs,
     output cbus_resp_t [MAX_INDEX:0] iresps,
     output cbus_req_t  oreq,
-    input  cbus_resp_t oresp
+    input  cbus_resp_t oresp,
+    input u64 satp,
+    input u2 priviledgeMode
 );
+    cbus_req_t oreq_middle;
+    cbus_resp_t oresp_middle;
+    mmu vmemory(
+        .clk(clk),
+        .rst(reset),
+        .satp(satp),
+        .priviledgeMode(priviledgeMode),
+        .cbus_req_from_core(oreq_middle),
+        .dummy_cbus_resp_to_core(oresp_middle),
+        .cbus_req_to_mem(oreq),
+        .cbus_resp_from_mem(oresp)
+    );
+
     logic busy;
     int index, select;
     cbus_req_t saved_req, selected_req;
 
-    // assign oreq = ireqs[index];
-    assign oreq = busy ? ireqs[index] : '0;  // prevent early issue
+    // assign oreq_middle = ireqs[index];
+    assign oreq_middle = busy ? ireqs[index] : '0;  // prevent early issue
     assign selected_req = ireqs[select];
 
     // select a preferred request
@@ -51,7 +67,7 @@ module CBusArbiter
         if (busy) begin
             for (int i = 0; i < NUM_INPUTS; i++) begin
                 if (index == i)
-                    iresps[i] = oresp;
+                    iresps[i] = oresp_middle;
             end
         end
     end
@@ -59,7 +75,7 @@ module CBusArbiter
     always_ff @(posedge clk)
     if (~reset) begin
         if (busy) begin
-            if (oresp.last)
+            if (oresp_middle.last)
                 {busy, saved_req} <= '0;
         end else begin
             // if not valid, busy <= 0

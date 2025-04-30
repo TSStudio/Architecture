@@ -230,10 +230,17 @@ typedef enum u3 {
     CSRRWI = 3'b101,
     CSRRSI = 3'b110,
     CSRRCI = 3'b111,
+    ETRAP = 3'b000,
 
-    UNKNOWN1 = 3'b000,
     UNKNOWN2 = 3'b100
 } csr_op_t;
+
+typedef enum u3 {
+    ECALL = 3'b000,
+    EBREAK = 3'b001,
+    MRET = 3'b010,
+    UNKNOWN = 3'b111
+} trap_t;
 
 typedef struct packed {
     logic    valid;     // in request?
@@ -295,6 +302,7 @@ typedef struct packed {
     u64 CSR_value;
     u12 CSR_addr;
     csr_op_t csr_op;
+    trap_t trap;
 } REG_ID_EX;
 
 typedef struct packed {
@@ -319,6 +327,8 @@ typedef struct packed {
     logic isCSRWrite;
     u64 CSR_write_value;
     u12 CSR_addr;
+    csr_op_t csr_op;
+    trap_t trap;
 } REG_EX_MEM;
 
 typedef struct packed {
@@ -343,6 +353,15 @@ typedef struct packed {
     logic isCSRWrite;
     u64 CSR_write_value;
     u12 CSR_addr;
+    logic isCSRWrite2;
+    u64 CSR_write_value2;
+    u12 CSR_addr2;
+    logic isCSRWrite3;
+    u64 CSR_write_value3;
+    u12 CSR_addr3;
+
+    logic priviledgeModeWrite;
+    u2 newPriviledgeMode;
 } REG_MEM_WB;
 
 typedef struct packed {

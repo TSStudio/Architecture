@@ -161,6 +161,8 @@ always_ff @(posedge clk  or posedge rst) begin
         moduleOut.isCSRWrite <= moduleIn.isCSRWrite;
         moduleOut.CSR_write_value <= CSR_write_value;
         moduleOut.CSR_addr <= moduleIn.CSR_addr;
+        moduleOut.csr_op <= moduleIn.csr_op;
+        moduleOut.trap <= moduleIn.trap;
 
         req_submitted <= 0;
     end else begin

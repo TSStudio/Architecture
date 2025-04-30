@@ -13,8 +13,12 @@ module core import common::*; import csr_pkg::*;(
 	input  ibus_resp_t iresp,
 	output dbus_req_t  dreq,
 	input  dbus_resp_t dresp,
-	input  logic       trint, swint, exint
+	input  logic       trint, swint, exint,
+	output u2          priviledgeMode,
+	output u64         satp
 );
+
+assign satp = csrs[7];
 
 WB_COMMIT wb_commit;
 u64 regs[31:0];
@@ -28,7 +32,8 @@ datapath datapath_inst(
 	.dresp(dresp),
 	.wb_commit(wb_commit),
 	.regs(regs),
-	.csrs(csrs)
+	.csrs(csrs),
+	.priviledgeMode(priviledgeMode)
 );
 
 `ifdef VERILATOR
@@ -97,7 +102,7 @@ datapath datapath_inst(
 	DifftestCSRState DifftestCSRState(
 		.clock              (clk),
 		.coreid             (csrs[4][7:0]),
-		.priviledgeMode     (3),
+		.priviledgeMode     (priviledgeMode),
 		.mstatus            (csrs[0]),
 		.sstatus            (csrs[0] & SSTATUS_MASK),
 		.mepc               (csrs[6]),

@@ -17,8 +17,19 @@ module datapath import common::*;(
     input  dbus_resp_t dresp,
     output WB_COMMIT wb_commit,
     output u64 regs [31:0],
-    output u64 csrs [31:0]
+    output u64 csrs [31:0],
+    output u2 priviledgeMode
 );
+
+always_ff @(posedge clk or posedge rst) begin
+    if (rst) begin
+        priviledgeMode <= 3;
+    end else begin
+        if (priviledgeModeWrite) begin
+            priviledgeMode <= newPriviledgeMode;
+        end
+    end
+end
 
 REG_IF_ID if_id;
 REG_ID_EX id_ex;
@@ -48,6 +59,15 @@ u64 CSR_value;
 logic CSR_wbEn;
 u12 CSR_write_addr;
 u64 CSR_write_value;
+logic CSR_wbEn2;
+u12 CSR_write_addr2;
+u64 CSR_write_value2;
+logic CSR_wbEn3;
+u12 CSR_write_addr3;
+u64 CSR_write_value3;
+
+logic priviledgeModeWrite;
+u2 newPriviledgeMode;
 
 regfile regfile_inst(
     .clk(clk),
@@ -70,6 +90,12 @@ csr csr_inst(
     .wdEn(CSR_wbEn),
     .write_target(CSR_write_addr),
     .write_data(CSR_write_value),
+    .wdEn2(CSR_wbEn2),
+    .write_target2(CSR_write_addr2),
+    .write_data2(CSR_write_value2),
+    .wdEn3(CSR_wbEn3),
+    .write_target3(CSR_write_addr3),
+    .write_data3(CSR_write_value3),
     .csrs(csrs)
 );
 
@@ -127,7 +153,11 @@ memory memory_inst(
     .ok_to_proceed(o2p_memory),
     .ok_to_proceed_overall(o2p),
     .JumpEn(JumpEn),
-    .JumpAddr(JumpAddr)
+    .JumpAddr(JumpAddr),
+    .priviledgeMode(priviledgeMode),
+    .mtvec(csrs[3]),
+    .mepc(csrs[6]),
+    .mstatus(csrs[0])
 );
 
 writeback writeback_inst(
@@ -142,7 +172,18 @@ writeback writeback_inst(
     .ok_to_proceed_overall(o2p),
     .CSR_value(CSR_write_value),
     .CSR_addr(CSR_write_addr),
-    .CSR_wbEn(CSR_wbEn)
+    .CSR_wbEn(CSR_wbEn),
+
+    .CSR_value2(CSR_write_value2),
+    .CSR_addr2(CSR_write_addr2),
+    .CSR_wbEn2(CSR_wbEn2),
+
+    .CSR_value3(CSR_write_value3),
+    .CSR_addr3(CSR_write_addr3),
+    .CSR_wbEn3(CSR_wbEn3),
+
+    .priviledgeModeWrite(priviledgeModeWrite),
+    .newPriviledgeMode(newPriviledgeMode)
 );
 
 

@@ -4,7 +4,7 @@
 `include "src/memory/memory_solver.sv"
 `endif
 
-module memory import common::*;(
+module memory import common::*; import csr_pkg::*;(
     input logic clk,rst,
     input REG_EX_MEM moduleIn,
     output REG_MEM_WB moduleOut,
@@ -17,7 +17,12 @@ module memory import common::*;(
     output u64 JumpAddr,
 
     output logic ok_to_proceed,
-    input logic ok_to_proceed_overall
+    input logic ok_to_proceed_overall,
+
+    input u2 priviledgeMode,
+    input u64 mtvec,
+    input u64 mepc,
+    input u64 mstatus
 );
 
 logic cur_mem_op_done;
@@ -28,7 +33,12 @@ assign ok_to_proceed = ~(moduleIn.valid) | ~(moduleIn.isMemRead|moduleIn.isMemWr
 
 assign JumpEn = (moduleIn.isJump|(moduleIn.isBranch&moduleIn.flagResult)|moduleIn.isCSRWrite) & moduleIn.valid;
 
-assign JumpAddr = moduleIn.isCSRWrite? moduleIn.pcPlus4 : {moduleIn.aluOut[63:1],1'b0};
+assign JumpAddr = moduleIn.isCSRWrite? (
+    moduleIn.csr_op==ETRAP?(
+        moduleIn.trap==ECALL? mtvec:
+        moduleIn.trap==MRET? mepc:
+        moduleIn.pcPlus4
+    ) : moduleIn.pcPlus4) : {moduleIn.aluOut[63:1],1'b0};
 
 assign forwardSource.valid = moduleIn.valid & moduleIn.wd != 0;
 assign forwardSource.isWb = moduleIn.isWriteBack;
@@ -79,9 +89,41 @@ always_ff @(posedge clk or posedge rst) begin
             moduleOut.isMem <= moduleIn.isMemRead | moduleIn.isMemWrite;
             moduleOut.memAddr <= moduleIn.aluOut;
 
-            moduleOut.isCSRWrite <= moduleIn.isCSRWrite;
-            moduleOut.CSR_write_value <= moduleIn.CSR_write_value;
-            moduleOut.CSR_addr <= moduleIn.CSR_addr;
+            if(moduleIn.isCSRWrite && moduleIn.csr_op==ETRAP) begin
+                if(moduleIn.trap==ECALL) begin
+                    moduleOut.isCSRWrite <= 1;
+                    moduleOut.isCSRWrite2 <= 1;
+                    moduleOut.isCSRWrite3 <= 1;
+                    moduleOut.CSR_addr <= 12'h300; // mstatus
+                    moduleOut.CSR_write_value <= {mstatus[63:13],priviledgeMode,mstatus[10:8],mstatus[3],mstatus[6:4],1'b0,mstatus[2:0]};
+                    moduleOut.CSR_addr2 <= 12'h341; // mepc
+                    moduleOut.CSR_write_value2 <= moduleIn.pcPlus4;
+                    moduleOut.CSR_addr3 <= 12'h342; // mcause
+                    moduleOut.CSR_write_value3 <= 11;
+                    
+                    moduleOut.priviledgeModeWrite <= 1;
+                    moduleOut.newPriviledgeMode <= 3;
+                end else if(moduleIn.trap==MRET) begin
+                    moduleOut.isCSRWrite <= 1;
+                    moduleOut.isCSRWrite2 <= 0;
+                    moduleOut.isCSRWrite3 <= 0;
+                    moduleOut.CSR_addr <= 12'h300; // mstatus
+                    moduleOut.CSR_write_value <= {mstatus[63:8],1'b1,mstatus[6:4],mstatus[7],mstatus[2:0]};
+                    
+                    moduleOut.priviledgeModeWrite <= 1;
+                    moduleOut.newPriviledgeMode <= mstatus[12:11];
+                end else begin
+                    moduleOut.isCSRWrite <= 0;
+                    moduleOut.isCSRWrite2 <= 0;
+                    moduleOut.isCSRWrite3 <= 0;
+                    moduleOut.priviledgeModeWrite <= 0;
+                end
+            end else begin
+                moduleOut.isCSRWrite <= moduleIn.isCSRWrite;
+                moduleOut.CSR_write_value <= moduleIn.CSR_write_value;
+                moduleOut.CSR_addr <= moduleIn.CSR_addr;
+                moduleOut.isCSRWrite2 <= 0;
+            end
 
             cur_mem_op_done <= 0;
             cur_mem_op_started <= 0;
