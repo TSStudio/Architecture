@@ -52,7 +52,8 @@ always_ff @(negedge clk or posedge rst) begin
                 csrs[mapped_csr_addr_write] <= write_data & csr_write_mask;
             if(write_target!=CSR_MCYCLE)
                 csrs[9] <= csrs[9] + 1;
-        end else csrs[9] <= csrs[9] + 1;
+        end else
+            csrs[9] <= csrs[9] + 1;
     end
 end
 

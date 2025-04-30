@@ -42,6 +42,6 @@ jobs:
         make test-lab1
         make test-lab1-extra
         make test-lab2
-        make test-lab3
-        make test-lab3-extra TSET=all
+        make test-lab3 TEST=all
+        make test-lab3-extra TEST=all
         make test-lab4
