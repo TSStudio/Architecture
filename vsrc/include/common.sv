@@ -360,6 +360,8 @@ typedef struct packed {
     u64 CSR_write_value3;
     u12 CSR_addr3;
 
+    logic skip;
+
     logic priviledgeModeWrite;
     u2 newPriviledgeMode;
 } REG_MEM_WB;
@@ -371,6 +373,7 @@ typedef struct packed {
     logic isWb;
     u5  wd;
     u64 wdData;
+    logic skip;
 
     logic isMem;
     u64 memAddr;

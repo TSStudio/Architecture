@@ -124,6 +124,9 @@ assign trap =
     instr[31:20]==12'b001100000010 ? MRET :
     UNKNOWN;
 
+logic mret=
+    (instr[31:20]==12'b001100000010) & (instr[6:0]==7'b1110011);
+
 signextend signextend_inst(
     .instr(instr),
     .immSrc(immtype),

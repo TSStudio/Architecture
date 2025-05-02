@@ -9,6 +9,7 @@ module mmu import common::*;(
     input cbus_req_t cbus_req_from_core,
     output cbus_resp_t dummy_cbus_resp_to_core,
     output cbus_req_t cbus_req_to_mem,
+    output logic skip,
     input cbus_resp_t cbus_resp_from_mem
 );
 
@@ -19,6 +20,7 @@ always_ff @(posedge clk or posedge rst) begin
         state <= 0;
         cbus_req_to_mem.valid <= 0;
         dummy_cbus_resp_to_core.ready <= 0;
+        skip <= 0;
     end else begin
         case (state)
             0: begin
@@ -33,6 +35,7 @@ always_ff @(posedge clk or posedge rst) begin
                         cbus_req_to_mem.data <= cbus_req_from_core.data;
                         cbus_req_to_mem.len <= cbus_req_from_core.len;
                         cbus_req_to_mem.burst <= cbus_req_from_core.burst;
+                        skip <= cbus_req_from_core.addr[31]==0;
                     end else begin
                         state <= 1;
                         cbus_req_to_mem.valid <= 1;
@@ -83,6 +86,7 @@ always_ff @(posedge clk or posedge rst) begin
                     cbus_req_to_mem.data <= cbus_req_from_core.data;
                     cbus_req_to_mem.len <= cbus_req_from_core.len;
                     cbus_req_to_mem.burst <= cbus_req_from_core.burst;
+                    skip <= cbus_resp_from_mem.data[29]==0;
                 end
             end
             4: begin

@@ -15,7 +15,8 @@ module core import common::*; import csr_pkg::*;(
 	input  dbus_resp_t dresp,
 	input  logic       trint, swint, exint,
 	output u2          priviledgeMode,
-	output u64         satp
+	output u64         satp,
+	input  logic skip
 );
 
 assign satp = csrs[7];
@@ -33,7 +34,8 @@ datapath datapath_inst(
 	.wb_commit(wb_commit),
 	.regs(regs),
 	.csrs(csrs),
-	.priviledgeMode(priviledgeMode)
+	.priviledgeMode(priviledgeMode),
+	.skip(skip)
 );
 
 `ifdef VERILATOR
@@ -44,7 +46,7 @@ datapath datapath_inst(
 		.valid              (wb_commit.valid),
 		.pc                 (wb_commit.instrAddr),
 		.instr              (wb_commit.instr),
-		.skip               ((wb_commit.isMem & wb_commit.memAddr[31] == 0)),
+		.skip               ((wb_commit.isMem & wb_commit.skip)),
 		.isRVC              (0),
 		.scFailed           (0),
 		.wen                (wb_commit.isWb),

@@ -50,6 +50,7 @@ always_ff @(posedge clk or posedge rst) begin
                 moduleOut.instr <= moduleIn.instr;
                 moduleOut.isMem <= moduleIn.isMem;
                 moduleOut.memAddr <= moduleIn.memAddr;
+                moduleOut.skip <= moduleIn.skip;
             end else if (moduleIn.isJump) begin
                 moduleOut.isWb <= 1;
                 moduleOut.wd <= moduleIn.wd;
@@ -58,6 +59,7 @@ always_ff @(posedge clk or posedge rst) begin
                 moduleOut.instr <= moduleIn.instr;
                 moduleOut.isMem <= moduleIn.isMem;
                 moduleOut.memAddr <= moduleIn.memAddr;
+                moduleOut.skip <= moduleIn.skip;
             end else begin
                 wbEn <= 0;
                 moduleOut.isWb <= 0;
@@ -65,6 +67,7 @@ always_ff @(posedge clk or posedge rst) begin
                 moduleOut.instr <= moduleIn.instr;
                 moduleOut.isMem <= moduleIn.isMem;
                 moduleOut.memAddr <= moduleIn.memAddr;
+                moduleOut.skip <= moduleIn.skip;
             end
         end
         wbEn <= 0;

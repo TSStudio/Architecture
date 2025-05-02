@@ -1,5 +1,6 @@
 `ifdef VERILATOR
 `include "include/common.sv"
+`include "include/csr.sv"
 `include "src/memory/memory_helper.sv"
 `include "src/memory/memory_solver.sv"
 `endif
@@ -22,7 +23,8 @@ module memory import common::*; import csr_pkg::*;(
     input u2 priviledgeMode,
     input u64 mtvec,
     input u64 mepc,
-    input u64 mstatus
+    input u64 mstatus,
+    input logic skip
 );
 
 logic cur_mem_op_done;
@@ -49,6 +51,8 @@ msize_t msize;
 strobe_t strobe;
 addr_t addr;
 word_t data;
+
+logic skp_send;
                 
 memoryHelper memoryHelper_inst(
     .addressReq(moduleIn.aluOut),
@@ -88,6 +92,7 @@ always_ff @(posedge clk or posedge rst) begin
 
             moduleOut.isMem <= moduleIn.isMemRead | moduleIn.isMemWrite;
             moduleOut.memAddr <= moduleIn.aluOut;
+            moduleOut.skip <= skp_send;
 
             if(moduleIn.isCSRWrite && moduleIn.csr_op==ETRAP) begin
                 if(moduleIn.trap==ECALL) begin
@@ -131,6 +136,7 @@ always_ff @(posedge clk or posedge rst) begin
         if(dresp.addr_ok & dresp.data_ok & cur_mem_op_started) begin
             cur_mem_data <= dresp.data;
             cur_mem_op_done <= 1;
+            skp_send <= skip;
             dreq.valid <= 0;
         end
         if(moduleIn.valid & (moduleIn.isMemRead|moduleIn.isMemWrite) & ~cur_mem_op_started) begin

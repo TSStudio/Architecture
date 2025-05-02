@@ -18,7 +18,8 @@ module datapath import common::*;(
     output WB_COMMIT wb_commit,
     output u64 regs [31:0],
     output u64 csrs [31:0],
-    output u2 priviledgeMode
+    output u2 priviledgeMode,
+    input logic skip
 );
 
 always_ff @(posedge clk or posedge rst) begin
@@ -157,7 +158,8 @@ memory memory_inst(
     .priviledgeMode(priviledgeMode),
     .mtvec(csrs[3]),
     .mepc(csrs[6]),
-    .mstatus(csrs[0])
+    .mstatus(csrs[0]),
+    .skip(skip)
 );
 
 writeback writeback_inst(

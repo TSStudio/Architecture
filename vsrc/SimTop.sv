@@ -32,9 +32,10 @@ module SimTop import common::*;(
 
     u2 priviledgeMode;
     u64 satp;
+    logic skip;
 
     core core(
-      .clk(clock), .reset, .ireq, .iresp, .dreq, .dresp, .trint, .swint, .exint, .priviledgeMode, .satp
+      .clk(clock), .reset, .ireq, .iresp, .dreq, .dresp, .trint, .swint, .exint, .priviledgeMode, .satp, .skip
     );
 
     IBusToCBus icvt(.*);
