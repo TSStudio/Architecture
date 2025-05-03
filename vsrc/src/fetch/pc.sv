@@ -15,7 +15,8 @@ module programCounter import common::*;(
     input logic ok_to_proceed_overall,
 
     input logic JumpEn,
-    input u64 JumpAddr
+    input u64 JumpAddr,
+    input logic csrJump
 );
 
 u64 curPC;
@@ -30,6 +31,8 @@ initial begin
 end
 
 assign ok_to_proceed = instr_ok;
+
+logic stall;
 
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
@@ -49,7 +52,8 @@ always_ff @(posedge clk or posedge rst) begin
                 ibus_req.addr <= JumpAddr;
                 ibus_req.valid <= 1;
                 instr_ok <= 0;
-            end else if(~lwHold) begin 
+                stall <= csrJump;
+            end else if(~lwHold & ~stall) begin 
                 moduleOut.valid <= 1;
                 moduleOut.pc <= curPC;
                 moduleOut.pcPlus4 <= curPC+4;
@@ -65,6 +69,7 @@ always_ff @(posedge clk or posedge rst) begin
                 moduleOut.valid <= 0;
                 ibus_req.valid <= 0;
                 instr_ok <= 1;
+                stall <= 0;
             end
         end
         if (ibus_resp.addr_ok & ibus_resp.data_ok) begin

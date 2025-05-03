@@ -53,6 +53,7 @@ assign o2p = o2p_fetch & o2p_decode & o2p_execute & o2p_memory & o2p_writeback;
 
 logic JumpEn;
 u64 JumpAddr;
+logic csrJump;
 
 u12 CSR_addr;
 u64 CSR_value;
@@ -110,7 +111,8 @@ programCounter pc_inst(
     .ok_to_proceed(o2p_fetch),
     .ok_to_proceed_overall(o2p),
     .JumpEn(JumpEn),
-    .JumpAddr(JumpAddr)
+    .JumpAddr(JumpAddr),
+    .csrJump(csrJump)
 );
 
 decoder decoder_inst(
@@ -159,7 +161,11 @@ memory memory_inst(
     .mtvec(csrs[3]),
     .mepc(csrs[6]),
     .mstatus(csrs[0]),
-    .skip(skip)
+    .skip(skip),
+    .csrJump(csrJump),
+
+    .priviledgeModeWrite(priviledgeModeWrite),
+    .newPriviledgeMode(newPriviledgeMode)
 );
 
 writeback writeback_inst(
@@ -182,10 +188,7 @@ writeback writeback_inst(
 
     .CSR_value3(CSR_write_value3),
     .CSR_addr3(CSR_write_addr3),
-    .CSR_wbEn3(CSR_wbEn3),
-
-    .priviledgeModeWrite(priviledgeModeWrite),
-    .newPriviledgeMode(newPriviledgeMode)
+    .CSR_wbEn3(CSR_wbEn3)
 );
 
 
