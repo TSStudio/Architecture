@@ -45,3 +45,4 @@ jobs:
         make test-lab3 TEST=all
         make test-lab3-extra TEST=all
         make test-lab4
+        make test-lab5
