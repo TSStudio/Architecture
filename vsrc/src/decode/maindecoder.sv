@@ -76,8 +76,10 @@ end
 u3 immtype; // I:00 S:01 B:10 J:11
 u3 optype;
 
-u3 funct3 = instr[14:12];
-u7 funct7 = instr[31:25];
+u3 funct3;
+assign funct3 = instr[14:12];
+u7 funct7;
+assign funct7 = instr[31:25];
 
 assign immtype =
                 (instr[6:0]==7'b0010011 || instr[6:0]==7'b0000011 || instr[6:0]==7'b0011011 || instr[6:0] == 7'b1100111)? 3'b000:

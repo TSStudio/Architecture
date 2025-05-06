@@ -38,7 +38,7 @@ always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         curPC <= PCINIT;
         nextPC <= PCINIT+4;
-        ibus_req.addr <= curPC;
+        ibus_req.addr <= PCINIT;
         ibus_req.valid <= 1;
         moduleOut.valid <= 0;
         instr_ok <= 0;
@@ -71,8 +71,7 @@ always_ff @(posedge clk or posedge rst) begin
                 instr_ok <= 1;
                 stall <= 0;
             end
-        end
-        if (ibus_resp.addr_ok & ibus_resp.data_ok) begin
+        end else if (ibus_resp.addr_ok & ibus_resp.data_ok) begin
             instr_ok <= 1;
             instr_n <= ibus_resp.data;
             ibus_req.valid <= 0;

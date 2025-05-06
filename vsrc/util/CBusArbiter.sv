@@ -11,6 +11,8 @@
  * this implementation is not efficient, since
  * it adds one cycle lantency to all requests.
  */
+`define UNUSED_OK(list) \
+    logic _unused_ok = &{1'b0, {list}, 1'b0};
 
 module CBusArbiter
 	import common::*;#(
@@ -74,8 +76,10 @@ module CBusArbiter
         end
     end
 
-    always_ff @(posedge clk)
-    if (~reset) begin
+    always_ff @(posedge clk or posedge reset)
+    if (reset) begin
+        {busy, index, saved_req} <= '0;
+    end else begin
         if (busy) begin
             if (oresp_middle.last)
                 {busy, saved_req} <= '0;
@@ -85,8 +89,6 @@ module CBusArbiter
             index <= select;
             saved_req <= selected_req;
         end
-    end else begin
-        {busy, index, saved_req} <= '0;
     end
 
     `UNUSED_OK({saved_req});
