@@ -141,6 +141,8 @@ always_ff @(posedge clk  or posedge rst) begin
         moduleOut.valid <= 0;
     end else if(ok_to_proceed_overall) begin
         moduleOut.valid <= moduleIn.valid & ~JumpEn;
+        moduleOut.exception_valid <= moduleIn.exception_valid & ~JumpEn;
+        moduleOut.exception <= moduleIn.exception;
         moduleOut.rs2 <= moduleIn.rs2;
         moduleOut.aluOut <= datUse;
         moduleOut.pcPlus4 <= moduleIn.pcPlus4;

@@ -21,7 +21,8 @@ module maindecoder import common::*;(
     output trap_t trap,
 
     output logic cns, cmpSrcB, flagInv,
-    output u2 useflag //use which flag
+    output u2 useflag, //use which flag
+    output logic illegal
 );
 
 assign isBranch    =  instr[6:0]==7'b1100011; // B-type
@@ -240,6 +241,191 @@ assign mulOp =  (instr[6:0]==7'b0110011)?(
                         4'b1111 // remuw
                     : 4'b0000
                 ): 4'b0000;
-                    
+
+
+always_comb begin
+    illegal = 0;
+    if(instr[6:0]==7'b0110011) begin // RV32I-R RV32M-R, arithmetic
+        if(funct3==3'b000) begin
+            if(funct7!=7'b0000000 && funct7!=7'b0100000 && funct7!=7'b0000001) begin // add sub mul
+                illegal = 1;
+            end
+        end else if (funct3==3'b001) begin
+            if(funct7!=7'b0000000) begin // sll
+                illegal = 1;
+            end
+        end else if (funct3==3'b010) begin
+            if(funct7!=7'b0000000) begin // slt
+                illegal = 1;
+            end
+        end else if (funct3==3'b011) begin
+            if(funct7!=7'b0000000) begin // sltu
+                illegal = 1;
+            end
+        end else if (funct3==3'b100) begin
+            if(funct7!=7'b0000000 && funct7!=7'b0000001) begin // xor div
+                illegal = 1;
+            end
+        end else if (funct3==3'b101) begin
+            if(funct7!=7'b0000000 && funct7!=7'b0100000 && funct7!=7'b0000001) begin // srl sra divu
+                illegal = 1;
+            end
+        end else if (funct3==3'b110) begin
+            if(funct7!=7'b0000000 && funct7!=7'b0000001) begin // or rem
+                illegal = 1;
+            end
+        end else if (funct3==3'b111) begin
+            if(funct7!=7'b0000000 && funct7!=7'b0000001) begin // and remu
+                illegal = 1;
+            end
+        end
+    end else if(instr[6:0]==7'b0010011) begin // RV32I-I, arithmetic
+        if(funct3==3'b000) begin // addi
+            illegal = 0;
+        end else if (funct3==3'b010) begin // slti
+            illegal = 0;
+        end else if (funct3==3'b011) begin // sltiu
+            illegal = 0; 
+        end else if (funct3==3'b100) begin // xori
+            illegal = 0; 
+        end else if (funct3==3'b110) begin // ori
+            illegal = 0; 
+        end else if (funct3==3'b111) begin // andi
+            illegal = 0; 
+        end else if (funct3==3'b001) begin // slli both RV32I and RV64I
+            if(funct7[6:1]!=6'b000000) begin
+                illegal = 1;
+            end
+        end else if (funct3==3'b101) begin // srli srai
+            if(funct7[6:1]!=6'b000000 && funct7[6:1]!=6'b010000) begin
+                illegal = 1;
+            end
+        end
+    end else if(instr[6:0]==7'b0111011) begin // RV64I-R, arithmetic
+        if(funct3==3'b000) begin
+            if(funct7!=7'b0000000 && funct7!=7'b0100000 && funct7!=7'b0000001) begin // addw subw mulw
+                illegal = 1;
+            end
+        end else if (funct3==3'b001) begin
+            if(funct7!=7'b0000000) begin // sllw
+                illegal = 1;
+            end
+        end else if (funct3==3'b100) begin
+            if(funct7!=7'b0000001) begin // divw
+                illegal = 1;
+            end
+        end else if (funct3==3'b101) begin
+            if(funct7!=7'b0000000 && funct7!=7'b0100000 && funct7!=7'b0000001) begin // srlw sraw divuw
+                illegal = 1;
+            end
+        end else if (funct3==3'b110) begin
+            if(funct7!=7'b0000001) begin // remw
+                illegal = 1;
+            end
+        end else if (funct3==3'b111) begin
+            if(funct7!=7'b0000001) begin // remuw
+                illegal = 1;
+            end
+        end 
+    end else if(instr[6:0]==7'b0011011) begin // RV64I-I, arithmetic
+        if(funct3==3'b000) begin // addiw
+            illegal = 0;
+        end else if (funct3==3'b001) begin // slliw
+            if(funct7[6:1]!=6'b000000) begin
+                illegal = 1;
+            end
+        end else if (funct3==3'b101) begin // srliw sraiw
+            if(funct7[6:1]!=6'b000000 && funct7[6:1]!=6'b010000) begin
+                illegal = 1;
+            end
+        end else begin 
+            illegal = 1;
+        end
+    end else if(instr[6:0]==7'b0000011) begin // load
+        if(funct3==3'b000) begin // lb
+            illegal = 0;
+        end else if (funct3==3'b001) begin // lh
+            illegal = 0;
+        end else if (funct3==3'b010) begin // lw
+            illegal = 0;
+        end else if (funct3==3'b011) begin // ld
+            illegal = 0;
+        end else if (funct3==3'b100) begin // lbu
+            illegal = 0;
+        end else if (funct3==3'b101) begin // lhu
+            illegal = 0;
+        end else if (funct3==3'b110) begin // lwu
+            illegal = 0;
+        end else begin 
+            illegal = 1;
+        end
+    end else if(instr[6:0]==7'b0100011) begin // RV32I-S, store
+        if(funct3==3'b000) begin // sb
+            illegal = 0;
+        end else if (funct3==3'b001) begin // sh
+            illegal = 0;
+        end else if (funct3==3'b010) begin // sw
+            illegal = 0;
+        end else if (funct3==3'b011) begin // sd
+            illegal = 0;
+        end else begin 
+            illegal = 1;
+        end
+    end else if(instr[6:0]==7'b1100011) begin // RV32I-B, branch
+        if(funct3==3'b000) begin // beq
+            illegal = 0;
+        end else if (funct3==3'b001) begin // bne
+            illegal = 0;
+        end else if (funct3==3'b100) begin // blt
+            illegal = 0;
+        end else if (funct3==3'b101) begin // bge
+            illegal = 0;
+        end else if (funct3==3'b110) begin // bltu
+            illegal = 0;
+        end else if (funct3==3'b111) begin // bgeu
+            illegal = 0;
+        end else begin 
+            illegal = 1;
+        end
+    end else if(instr[6:0]==7'b1101111) begin // RV32I-J, jal
+        illegal = 0;
+    end else if(instr[6:0]==7'b1100111) begin // RV32I-I, jalr
+        if(funct3==3'b000) begin // jalr
+            illegal = 0;
+        end else begin 
+            illegal = 1;
+        end
+    end else if(instr[6:0]==7'b0110111) begin // lui
+        illegal = 0;
+    end else if(instr[6:0]==7'b0010111) begin // auipc
+        illegal = 0;
+    end else if(instr[6:0]==7'b1110011) begin // CSR
+        if(funct3==3'b000) begin // etrap
+            if(funct7 == 7'b0001001) begin
+                illegal = 0;
+            end else if(trap==UNKNOWN) begin
+                illegal = 1;
+            end else begin
+                illegal = 0;
+            end
+        end else if(funct3==3'b001) begin // csrrw
+            illegal = 0;
+        end else if (funct3==3'b010) begin // csrrs
+            illegal = 0;
+        end else if (funct3==3'b011) begin // csrrc
+            illegal = 0;
+        end else if (funct3==3'b101) begin // csrrwi
+            illegal = 0;
+        end else if (funct3==3'b110) begin // csrrsi
+            illegal = 0;
+        end else if (funct3==3'b111) begin // csrrci
+            illegal = 0;
+        end else begin 
+            illegal = 1;
+        end
+    end else begin 
+        illegal = 1;
+    end
+end                
 
 endmodule

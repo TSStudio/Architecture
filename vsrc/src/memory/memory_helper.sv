@@ -9,7 +9,8 @@ module memoryHelper import common::*;(
     output addr_t addr,
     output msize_t msize,
     output strobe_t strobe,
-    output word_t data
+    output word_t data,
+    output logic mis_aligned
 );
 
 assign msize =  (memMode == 4'b0000) ? MSIZE8: // lb
@@ -53,6 +54,13 @@ assign strobe = (memMode == 4'b1000) ? (// sb
                 ):
                 (memMode == 4'b1011) ? 8'b11111111: // sd
                 0;
+
+assign mis_aligned = (memMode[1:0] == 2'b00) ? 0 : //never when only 1 byte
+                (memMode[1:0] == 2'b01) ? (addressReq[0] != 0) : // 2 byte
+                (memMode[1:0] == 2'b10) ? (addressReq[1:0] != 0) : // 4 byte
+                 (addressReq[2:0] != 0); // 8 byte
+                
+
 
 assign data = (memMode == 4'b1000)?(
                 addressReq[2:0] == 3'b000 ? {56'b0,dataIn[7:0]}:

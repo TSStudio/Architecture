@@ -259,6 +259,21 @@ typedef struct packed {
     word_t data;        // the data from AXI bus
 } cbus_resp_t;
 
+typedef enum u4 {
+    MACHINE_EXTERNAL_INTERRUPT = 4'b0000,
+    SUPERVISOR_EXTERNAL_INTERRUPT = 4'b0001,
+    MACHINE_SOFTWARE_INTERRUPT = 4'b0010,
+    SUPERVISOR_SOFTWARE_INTERRUPT = 4'b0011,
+    MACHINE_TIMER_INTERRUPT = 4'b0100,
+    SUPERVISOR_TIMER_INTERRUPT = 4'b0101,
+    ILLEGAL_INSTRUCTION = 4'b0110,
+    INSTRUCTION_ADDRESS_MISALIGNED = 4'b1000,
+    ENVIRONMENT_CALL_FROM_U_MODE = 4'b1010,
+    LOAD_ADDRESS_MISALIGNED = 4'b1100,
+    STORE_AMO_ADDRESS_MISALIGNED = 4'b1110,
+    NO_EXCEPTION = 4'b1111
+} exception_t;
+
 typedef struct packed {
     logic  valid;
     u64 pcPlus4;
@@ -266,6 +281,9 @@ typedef struct packed {
     u32 instr;
 
     u64 instrAddr;
+
+    logic exception_valid;
+    exception_t exception;
 } REG_IF_ID;
 
 typedef struct packed {
@@ -303,6 +321,9 @@ typedef struct packed {
     u12 CSR_addr;
     csr_op_t csr_op;
     trap_t trap;
+
+    logic exception_valid;
+    exception_t exception;
 } REG_ID_EX;
 
 typedef struct packed {
@@ -329,6 +350,9 @@ typedef struct packed {
     u12 CSR_addr;
     csr_op_t csr_op;
     trap_t trap;
+
+    logic exception_valid;
+    exception_t exception;
 } REG_EX_MEM;
 
 typedef struct packed {

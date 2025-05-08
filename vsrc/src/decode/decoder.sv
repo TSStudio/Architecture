@@ -35,6 +35,8 @@ u4 mulOp;
 logic cns, cmpSrcB, flagInv;
 u2 useflag; //use which flag
 
+logic illegal;
+
 logic isCSRWrite;
 csr_op_t csr_op;
 trap_t trap;
@@ -67,7 +69,8 @@ maindecoder maindecoder_inst(
     .isCSRWrite(isCSRWrite),
     .csr_op(csr_op),
     .CSR_addr(CSR_addr),
-    .trap(trap)
+    .trap(trap),
+    .illegal(illegal)
 );
 
 u64 rs1DataOutS1, rs1DataOutS2, rs2DataOutS1, rs2DataOutS2;
@@ -85,6 +88,22 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.valid <= 0;
     end else if(ok_to_proceed_overall) begin
         moduleOut.valid <= moduleIn.valid & ~JumpEn;
+        if(JumpEn) begin
+            moduleOut.exception_valid <= 0;
+        end else begin
+            if(moduleIn.exception_valid) begin
+                moduleOut.exception <= moduleIn.exception;
+            end else if(illegal & moduleIn.valid) begin
+                moduleOut.exception_valid <= 1;
+                moduleOut.exception <= ILLEGAL_INSTRUCTION;
+            end else if(csr_op==ETRAP&&trap==ECALL&&isCSRWrite&&moduleIn.valid) begin
+                moduleOut.exception_valid <= 1;
+                moduleOut.exception <= ENVIRONMENT_CALL_FROM_U_MODE;
+            end else begin
+                moduleOut.exception_valid <= 0;
+                moduleOut.exception <= NO_EXCEPTION;
+            end
+        end
         moduleOut.pc <= moduleIn.pc;
         moduleOut.pcPlus4 <= moduleIn.pcPlus4;
 

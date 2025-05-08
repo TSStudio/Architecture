@@ -1,5 +1,6 @@
 `ifdef VERILATOR
 `include "include/common.sv"
+`include "src/fetch/int.sv"
 `endif
 
 module programCounter import common::*;(
@@ -16,7 +17,36 @@ module programCounter import common::*;(
 
     input logic JumpEn,
     input u64 JumpAddr,
-    input logic csrJump
+    input logic csrJump,
+
+    input logic trint,
+    input logic swint,
+    input logic exint,
+
+    input u2 priviledgeMode,
+    input u64 mstatus,
+    input u64 mtimecmp,
+    input u64 mcycle,
+    input u64 mip,
+    input u64 mie
+);
+
+logic intEn;
+exception_t exception_int;
+
+interruptJudge iJ(
+    .priviledgeMode(priviledgeMode),
+    .trint(trint),
+    .swint(swint),
+    .exint(exint),
+    .mstatus(mstatus),
+    .mtimecmp(mtimecmp),
+    .mcycle(mcycle),
+    .mip(mip),
+    .mie(mie),
+
+    .intEn(intEn),
+    .exception(exception_int)
 );
 
 u64 curPC;
@@ -25,6 +55,8 @@ u64 nextPC;
 u32 instr_n;
 
 logic instr_ok;
+
+logic mis_align;
 
 initial begin
     
@@ -46,27 +78,52 @@ always_ff @(posedge clk or posedge rst) begin
         if(ok_to_proceed_overall) begin
             if(JumpEn) begin
                 moduleOut.valid <= 0;
-
+                moduleOut.exception_valid <= 0;
                 curPC <= JumpAddr;
                 nextPC <= JumpAddr + 4;
-                ibus_req.addr <= JumpAddr;
-                ibus_req.valid <= 1;
+                if(JumpAddr[1:0] != 2'b00) begin
+                    mis_align <= 1;
+                end else begin
+                    ibus_req.addr <= JumpAddr;
+                    ibus_req.valid <= 1;
+                    mis_align <= 0;
+                end
                 instr_ok <= 0;
                 stall <= csrJump;
-            end else if(~lwHold & ~stall) begin 
+            end else if(~lwHold & ~stall & ~intEn) begin 
                 moduleOut.valid <= 1;
                 moduleOut.pc <= curPC;
                 moduleOut.pcPlus4 <= curPC+4;
-                moduleOut.instr <= instr_n;
                 moduleOut.instrAddr <= curPC;
-
+                if (mis_align) begin
+                    moduleOut.instr <= 0;
+                    moduleOut.exception_valid <= 1;
+                    moduleOut.exception <= INSTRUCTION_ADDRESS_MISALIGNED;
+                end else begin
+                    moduleOut.instr <= instr_n;
+                    moduleOut.exception_valid <= 0;
+                end
                 curPC <= nextPC;
-                ibus_req.addr <= nextPC;
-                ibus_req.valid <= 1;
+                if (nextPC[1:0] != 2'b00) begin
+                    mis_align <= 1;
+                    ibus_req.valid <= 0;
+                end else begin
+                    mis_align <= 0;
+                    ibus_req.addr <= nextPC;
+                    ibus_req.valid <= 1;
+                end
                 instr_ok <= 0;
                 nextPC <= nextPC + 4;
             end else begin
                 moduleOut.valid <= 0;
+                if(intEn) begin
+                    moduleOut.exception_valid <= 1;
+                    moduleOut.exception <= exception_int;
+                    moduleOut.pc <= curPC;
+                    moduleOut.instrAddr <= curPC;
+                end else begin
+                    moduleOut.exception_valid <= 0;
+                end
                 ibus_req.valid <= 0;
                 instr_ok <= 1;
                 stall <= 0;

@@ -35,7 +35,10 @@ datapath datapath_inst(
 	.regs(regs),
 	.csrs(csrs),
 	.priviledgeMode(priviledgeMode),
-	.skip(skip)
+	.skip(skip),
+	.trint(trint),
+	.swint(swint),
+	.exint(exint)
 );
 
 `ifdef VERILATOR

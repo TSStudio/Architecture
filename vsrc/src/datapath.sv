@@ -19,7 +19,10 @@ module datapath import common::*;(
     output u64 regs [31:0],
     output u64 csrs [31:0],
     output u2 priviledgeMode,
-    input logic skip
+    input logic skip,
+    input logic trint,
+    input logic swint,
+    input logic exint
 );
 
 always_ff @(posedge clk or posedge rst) begin
@@ -112,7 +115,16 @@ programCounter pc_inst(
     .ok_to_proceed_overall(o2p),
     .JumpEn(JumpEn),
     .JumpAddr(JumpAddr),
-    .csrJump(csrJump)
+    .csrJump(csrJump),
+    .trint(trint),
+    .swint(swint),
+    .exint(exint),
+    .priviledgeMode(priviledgeMode),
+    .mstatus(csrs[0]),
+    .mtimecmp(csrs[23]),
+    .mcycle(csrs[9]),
+    .mip(csrs[2]),
+    .mie(csrs[1])
 );
 
 decoder decoder_inst(
