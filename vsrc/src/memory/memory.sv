@@ -37,9 +37,9 @@ logic cur_mem_op_started;
 
 assign ok_to_proceed = ~(moduleIn.valid) | ~(moduleIn.isMemRead|moduleIn.isMemWrite) | cur_mem_op_done;
 
-assign JumpEn = (moduleIn.isJump|(moduleIn.isBranch&moduleIn.flagResult)|exception!=NO_EXCEPTION|moduleIn.isCSRWrite) & moduleIn.valid;
+assign JumpEn = ((moduleIn.isJump|(moduleIn.isBranch&moduleIn.flagResult)|moduleIn.isCSRWrite) & moduleIn.valid) | exception!=NO_EXCEPTION;
 
-assign csrJump = (moduleIn.isCSRWrite) & moduleIn.valid |exception!=NO_EXCEPTION;
+assign csrJump = ((moduleIn.isCSRWrite) & moduleIn.valid) | exception!=NO_EXCEPTION;
 
 assign JumpAddr = exception!=NO_EXCEPTION? mtvec:
     moduleIn.isCSRWrite? (
@@ -97,7 +97,7 @@ always_ff @(posedge clk or posedge rst) begin
         cur_mem_op_done <= 0;
     end else begin 
         if(ok_to_proceed_overall) begin
-            moduleOut.valid <= moduleIn.valid;
+            moduleOut.valid <= moduleIn.valid | exception!=NO_EXCEPTION;
             moduleOut.aluOut <= moduleIn.aluOut;
             moduleOut.pcPlus4 <= moduleIn.pcPlus4;
             moduleOut.isWriteBack <= moduleIn.isWriteBack & ~moduleIn.exception_valid & ~memNotAligned;
@@ -112,7 +112,7 @@ always_ff @(posedge clk or posedge rst) begin
             moduleOut.memAddr <= moduleIn.aluOut;
             moduleOut.skip <= skp_send;
 
-            if(moduleIn.exception_valid | memNotAligned & moduleIn.valid) begin
+            if(moduleIn.exception_valid | (memNotAligned & moduleIn.valid)) begin
                 moduleOut.isCSRWrite <= 1;
                 moduleOut.isCSRWrite2 <= 1;
                 moduleOut.isCSRWrite3 <= 1;

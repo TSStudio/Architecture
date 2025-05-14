@@ -83,26 +83,21 @@ always_ff @(posedge clk or posedge rst) begin
                 nextPC <= JumpAddr + 4;
                 if(JumpAddr[1:0] != 2'b00) begin
                     mis_align <= 1;
+                    instr_ok <= 1;
                 end else begin
                     ibus_req.addr <= JumpAddr;
                     ibus_req.valid <= 1;
                     mis_align <= 0;
+                    instr_ok <= 0;
                 end
-                instr_ok <= 0;
                 stall <= csrJump;
-            end else if(~lwHold & ~stall & ~intEn) begin 
+            end else if(~lwHold & ~stall & ~intEn & ~mis_align) begin 
                 moduleOut.valid <= 1;
                 moduleOut.pc <= curPC;
                 moduleOut.pcPlus4 <= curPC+4;
                 moduleOut.instrAddr <= curPC;
-                if (mis_align) begin
-                    moduleOut.instr <= 0;
-                    moduleOut.exception_valid <= 1;
-                    moduleOut.exception <= INSTRUCTION_ADDRESS_MISALIGNED;
-                end else begin
-                    moduleOut.instr <= instr_n;
-                    moduleOut.exception_valid <= 0;
-                end
+                moduleOut.instr <= instr_n;
+                moduleOut.exception_valid <= 0;
                 curPC <= nextPC;
                 if (nextPC[1:0] != 2'b00) begin
                     mis_align <= 1;
@@ -119,6 +114,12 @@ always_ff @(posedge clk or posedge rst) begin
                 if(intEn) begin
                     moduleOut.exception_valid <= 1;
                     moduleOut.exception <= exception_int;
+                    moduleOut.pc <= curPC;
+                    moduleOut.instrAddr <= curPC;
+                end else if (mis_align) begin
+                    moduleOut.instr <= 0;
+                    moduleOut.exception_valid <= 1;
+                    moduleOut.exception <= INSTRUCTION_ADDRESS_MISALIGNED; 
                     moduleOut.pc <= curPC;
                     moduleOut.instrAddr <= curPC;
                 end else begin

@@ -26,7 +26,7 @@ always_comb begin
             end else if(swint) begin
                 intEn = 1;
                 exception = MACHINE_SOFTWARE_INTERRUPT;
-            end else if((trint|mcycle>mtimecmp)) begin
+            end else if((trint)) begin //|mcycle>mtimecmp
                 intEn = 1;
                 exception = MACHINE_TIMER_INTERRUPT;
             end else begin
@@ -38,13 +38,13 @@ always_comb begin
             exception = NO_EXCEPTION;
         end
     end else begin
-        if(exint & mip[11] & mie[11]) begin
+        if(exint & mie[11]) begin
             intEn = 1;
             exception = MACHINE_EXTERNAL_INTERRUPT;
-        end else if(swint & mip[3] & mie[3]) begin
+        end else if(swint & mie[3]) begin
             intEn = 1;
             exception = MACHINE_SOFTWARE_INTERRUPT;
-        end else if((trint|mcycle>mtimecmp) & mip[7] & mie[7]) begin
+        end else if((trint) & mie[7]) begin//|mcycle>mtimecmp
             intEn = 1;
             exception = MACHINE_TIMER_INTERRUPT;
         end else begin

@@ -92,6 +92,7 @@ always_ff @(posedge clk or posedge rst) begin
             moduleOut.exception_valid <= 0;
         end else begin
             if(moduleIn.exception_valid) begin
+                moduleOut.exception_valid <= 1;
                 moduleOut.exception <= moduleIn.exception;
             end else if(illegal & moduleIn.valid) begin
                 moduleOut.exception_valid <= 1;

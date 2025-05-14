@@ -33,7 +33,7 @@ always_ff @(posedge clk or posedge rst) begin
         case (state)
             0: begin
                 if (cbus_req_from_core.valid) begin
-                    if(priviledgeMode==3) begin
+                    if(priviledgeMode==3 || satp[63:60]==0) begin
                         state <= 4;
                         cbus_req_to_mem.valid <= 1;
                         cbus_req_to_mem.is_write <= cbus_req_from_core.is_write;
