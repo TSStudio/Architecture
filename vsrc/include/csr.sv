@@ -32,8 +32,6 @@ package csr_pkg;
   parameter u12 CSR_SIE = 12'h104;
   parameter u12 CSR_SIP = 12'h144;
 
-  parameter u12 CSR_MTIMECMP = 12'hb01;
-
   parameter u64 MSTATUS_MASK = 64'h7e79bb;
   parameter u64 SSTATUS_MASK = 64'h800000030001e000;
   parameter u64 MIP_MASK = 64'h333;
