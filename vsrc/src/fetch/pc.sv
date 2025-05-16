@@ -25,8 +25,6 @@ module programCounter import common::*;(
 
     input u2 priviledgeMode,
     input u64 mstatus,
-    input u64 mtimecmp,
-    input u64 mcycle,
     input u64 mip,
     input u64 mie
 );
@@ -39,9 +37,7 @@ interruptJudge iJ(
     .trint(trint),
     .swint(swint),
     .exint(exint),
-    .mstatus(mstatus),
-    .mtimecmp(mtimecmp),
-    .mcycle(mcycle),
+    .mstatus(mstatus), 
     .mip(mip),
     .mie(mie),
 

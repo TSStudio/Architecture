@@ -8,8 +8,6 @@ module interruptJudge import common::*;(
     input logic swint,
     input logic exint,
     input u64 mstatus,
-    input u64 mtimecmp,
-    input u64 mcycle,
     input u64 mip,
     input u64 mie,
 

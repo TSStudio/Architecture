@@ -121,8 +121,6 @@ programCounter pc_inst(
     .exint(exint),
     .priviledgeMode(priviledgeMode),
     .mstatus(csrs[0]),
-    .mtimecmp(csrs[23]),
-    .mcycle(csrs[9]),
     .mip(csrs[2]),
     .mie(csrs[1])
 );

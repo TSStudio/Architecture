@@ -33,7 +33,6 @@ always_comb begin
         CSR_STVAL: mapped_target = 20;
         CSR_SIE: mapped_target = 21;
         CSR_SIP: mapped_target = 22;
-        CSR_MTIMECMP: mapped_target = 23;
         default: mapped_target = 31;
     endcase
     case(target)
