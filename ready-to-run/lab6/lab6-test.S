@@ -7203,14 +7203,14 @@ Disassembly of section .text._ntoa_long:
     80008810:	00900493          	li	s1,9
     80008814:	ff630f1b          	addiw	t5,t1,-10
     80008818:	02000413          	li	s0,32
-    8000881c:	03cff0b3          	remu	ra,t6,t3
+    8000881c:	3941406f          	j 8001cbb0 <integer_remu>
     80008820:	0ff0f313          	zext.b	t1,ra
     80008824:	0614e463          	bltu	s1,ra,8000888c <_ntoa_long+0xcc>
     80008828:	0303031b          	addiw	t1,t1,48
     8000882c:	0ff37313          	zext.b	t1,t1
     80008830:	00628023          	sb	t1,0(t0)
     80008834:	00170713          	addi	a4,a4,1
-    80008838:	03cfd333          	divu	t1,t6,t3
+    80008838:	3081406f          	j 8001cb40 <integer_divu>
     8000883c:	01cfe663          	bltu	t6,t3,80008848 <_ntoa_long+0x88>
     80008840:	00128293          	addi	t0,t0,1
     80008844:	04871063          	bne	a4,s0,80008884 <_ntoa_long+0xc4>
@@ -11221,3 +11221,71 @@ Disassembly of section .text.__clzdi2:
     8000c4f8:	0205051b          	addiw	a0,a0,32
     8000c4fc:	01010113          	addi	sp,sp,16
     8000c500:	00008067          	ret
+
+000000008001cb40 <integer_divu>:
+   1cb40:	fe010113          	addi	x2,x2,-32
+   1cb44:	00513023          	sd	x5,0(x2)
+   1cb48:	01d13423          	sd	x29,8(x2)
+   1cb4c:	01e13823          	sd	x30,16(x2)
+   1cb50:	00a13c23          	sd	x10,24(x2)
+   1cb54:	040e0063          	beqz	x28,1cb94 <_binary__home_koowz_arch_2025_ready_to_run_lab6_lab6_test_bin_start+0x1cb94>
+   1cb58:	04000293          	li	x5,64
+   1cb5c:	000f8f13          	mv	x30,x31
+   1cb60:	00000e93          	li	x29,0
+   1cb64:	00000313          	li	x6,0
+   1cb68:	03ff5513          	srli	x10,x30,0x3f
+   1cb6c:	001e9e93          	slli	x29,x29,0x1
+   1cb70:	00ae8eb3          	add	x29,x29,x10
+   1cb74:	001f1f13          	slli	x30,x30,0x1
+   1cb78:	00131313          	slli	x6,x6,0x1
+   1cb7c:	01cee663          	bltu	x29,x28,1cb88 <_binary__home_koowz_arch_2025_ready_to_run_lab6_lab6_test_bin_start+0x1cb88>
+   1cb80:	00130313          	addi	x6,x6,1
+   1cb84:	41ce8eb3          	sub	x29,x29,x28
+   1cb88:	fff28293          	addi	x5,x5,-1
+   1cb8c:	fc029ee3          	bnez	x5,1cb68 <_binary__home_koowz_arch_2025_ready_to_run_lab6_lab6_test_bin_start+0x1cb68>
+   1cb90:	0080006f          	j	1cb98 <_binary__home_koowz_arch_2025_ready_to_run_lab6_lab6_test_bin_start+0x1cb98>
+   1cb94:	fff00313          	li	x6,-1
+   1cb98:	01813503          	ld	x10,24(x2)
+   1cb9c:	01013f03          	ld	x30,16(x2)
+   1cba0:	00813e83          	ld	x29,8(x2)
+   1cba4:	00013283          	ld	x5,0(x2)
+   1cba8:	02010113          	addi	x2,x2,32
+   1cbac:	c91eb06f          	j	883c <_binary__home_koowz_arch_2025_ready_to_run_lab6_lab6_test_bin_start+0x883c>
+
+000000008001cbb0 <integer_remu>:
+   1cbb0:	fc010113          	addi	x2,x2,-64
+   1cbb4:	00813023          	sd	x8,0(x2)
+   1cbb8:	00913423          	sd	x9,8(x2)
+   1cbbc:	01213823          	sd	x18,16(x2)
+   1cbc0:	01313c23          	sd	x19,24(x2)
+   1cbc4:	03413023          	sd	x20,32(x2)
+   1cbc8:	03513423          	sd	x21,40(x2)
+   1cbcc:	03613823          	sd	x22,48(x2)
+   1cbd0:	040e0463          	beqz	x28,1cc18 <_binary__home_koowz_arch_2025_ready_to_run_lab6_lab6_test_bin_start+0x1cc18>
+   1cbd4:	00000413          	li	x8,0
+   1cbd8:	00000493          	li	x9,0
+   1cbdc:	000f8913          	mv	x18,x31
+   1cbe0:	04000b13          	li	x22,64
+   1cbe4:	03645663          	bge	x8,x22,1cc10 <_binary__home_koowz_arch_2025_ready_to_run_lab6_lab6_test_bin_start+0x1cc10>
+   1cbe8:	00149993          	slli	x19,x9,0x1
+   1cbec:	03f95a13          	srli	x20,x18,0x3f
+   1cbf0:	0149e9b3          	or	x19,x19,x20
+   1cbf4:	00191a93          	slli	x21,x18,0x1
+   1cbf8:	01c9e463          	bltu	x19,x28,1cc00 <_binary__home_koowz_arch_2025_ready_to_run_lab6_lab6_test_bin_start+0x1cc00>
+   1cbfc:	41c989b3          	sub	x19,x19,x28
+   1cc00:	00098493          	mv	x9,x19
+   1cc04:	000a8913          	mv	x18,x21
+   1cc08:	00140413          	addi	x8,x8,1 # ffffffffffffa001 <_binary__home_koowz_arch_2025_ready_to_run_lab6_lab6_test_bin_end+0xfffffffffffdd3c1>
+   1cc0c:	fd5ff06f          	j	1cbe0 <_binary__home_koowz_arch_2025_ready_to_run_lab6_lab6_test_bin_start+0x1cbe0>
+   1cc10:	00048093          	mv	x1,x9
+   1cc14:	0080006f          	j	1cc1c <_binary__home_koowz_arch_2025_ready_to_run_lab6_lab6_test_bin_start+0x1cc1c>
+   1cc18:	000f8093          	mv	x1,x31
+   1cc1c:	00013403          	ld	x8,0(x2)
+   1cc20:	00813483          	ld	x9,8(x2)
+   1cc24:	01013903          	ld	x18,16(x2)
+   1cc28:	01813983          	ld	x19,24(x2)
+   1cc2c:	02013a03          	ld	x20,32(x2)
+   1cc30:	02813a83          	ld	x21,40(x2)
+   1cc34:	03013b03          	ld	x22,48(x2)
+   1cc38:	04010113          	addi	x2,x2,64
+   1cc3c:	be5eb06f          	j	8820 <_binary__home_koowz_arch_2025_ready_to_run_lab6_lab6_test_bin_start+0x8820>

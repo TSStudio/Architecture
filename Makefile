@@ -62,6 +62,9 @@ test-lab5: sim
 test-lab6: sim
 	TEST=sys ./build/emu --no-diff -i ./ready-to-run/lab6/lab6-test.bin $(VOPT) || true
 
+test-lab6-diff: sim
+	TEST=sys ./build/emu --diff $(NEMU_HOME)/riscv64-nemu-interpreter-so-lab6 -i ./ready-to-run/lab6/lab6-test.bin $(VOPT) || true
+
 clean:
 	rm -rf build
 
