@@ -4,6 +4,7 @@
 `ifdef VERILATOR
 `include "include/common.sv"
 `include "util/mmu.sv"
+`include "util/CachedCBus.sv"
 `else
 
 `endif
@@ -30,8 +31,17 @@ module CBusArbiter
     input u2 priviledgeMode,
     output logic skip
 );
-    cbus_req_t oreq_middle;
-    cbus_resp_t oresp_middle;
+    cbus_req_t oreq_middle,oreq_middle2;
+    cbus_resp_t oresp_middle,oresp_middle2;
+
+    CachedCBus cached_cbus(
+        .clk(clk),
+        .reset(reset),
+        .request_from_mmu(oreq_middle2),
+        .response_to_mmu(oresp_middle2),
+        .request_to_mem(oreq),
+        .response_from_mem(oresp)
+    );
     mmu vmemory(
         .clk(clk),
         .rst(reset),
@@ -39,8 +49,8 @@ module CBusArbiter
         .priviledgeMode(priviledgeMode),
         .cbus_req_from_core(oreq_middle),
         .dummy_cbus_resp_to_core(oresp_middle),
-        .cbus_req_to_mem(oreq),
-        .cbus_resp_from_mem(oresp),
+        .cbus_req_to_mem(oreq_middle2),
+        .cbus_resp_from_mem(oresp_middle2),
         .skip(skip)
     );
 
