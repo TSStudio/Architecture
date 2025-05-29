@@ -116,7 +116,7 @@ logic mulbusy;
 assign forwardSource.valid = moduleIn.valid & moduleIn.wd != 0;
 assign forwardSource.isWb = moduleIn.isWriteBack;
 assign forwardSource.wd = moduleIn.wd;
-assign forwardSource.wdData = datUse;
+assign forwardSource.wdData = moduleIn.isJump?moduleIn.pcPlus4 : datUse;
 
 assign ok_to_proceed = (moduleIn.rvm ? mulready : 1) | ~moduleIn.valid;
 
@@ -165,6 +165,10 @@ always_ff @(posedge clk  or posedge rst) begin
         moduleOut.CSR_addr <= moduleIn.CSR_addr;
         moduleOut.csr_op <= moduleIn.csr_op;
         moduleOut.trap <= moduleIn.trap;
+
+        moduleOut.addr_if_not_jump <= moduleIn.addr_if_not_jump;
+        moduleOut.addr_if_jump <= moduleIn.addr_if_jump;
+        moduleOut.adopt_branch <= moduleIn.adopt_branch;
 
         req_submitted <= 0;
     end else begin

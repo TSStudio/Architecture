@@ -7,6 +7,7 @@
 `include "src/execute/execute.sv"
 `include "src/memory/memory.sv"
 `include "src/writeback/writeback.sv"
+`include "src/branch_predictor.sv"
 `endif
 
 module datapath import common::*;(
@@ -74,6 +75,15 @@ u64 CSR_write_value3;
 logic priviledgeModeWrite;
 u2 newPriviledgeMode;
 
+u64 pcbranch;
+logic adopt_branch;
+
+u64 _predictor_instrAddr_to_predict;
+logic _predictor_branch_prediction;
+logic _predictor_feedback_valid;
+u64 _predictor_instrAddr_to_feedback;
+logic _predictor_feedback_branch_taken;
+
 regfile regfile_inst(
     .clk(clk),
     .rst(rst),
@@ -104,6 +114,16 @@ csr csr_inst(
     .csrs(csrs)
 );
 
+branch_predictor predictor_inst(
+    .clk(clk),
+    .rst(rst),
+    .instrAddr_to_predict(_predictor_instrAddr_to_predict),
+    .branch_prediction(_predictor_branch_prediction),
+    .feedback_valid(_predictor_feedback_valid),
+    .instrAddr_to_feedback(_predictor_instrAddr_to_feedback),
+    .feedback_branch_taken(_predictor_feedback_branch_taken)
+);
+
 programCounter pc_inst(
     .clk(clk),
     .rst(rst),
@@ -122,7 +142,9 @@ programCounter pc_inst(
     .priviledgeMode(priviledgeMode),
     .mstatus(csrs[0]),
     .mip(csrs[2]),
-    .mie(csrs[1])
+    .mie(csrs[1]),
+    .pcbranch(pcbranch),
+    .adopt_branch(adopt_branch)
 );
 
 decoder decoder_inst(
@@ -141,7 +163,12 @@ decoder decoder_inst(
     .ok_to_proceed_overall(o2p),
     .CSR_addr(CSR_addr),
     .CSR_value(CSR_value),
-    .JumpEn(JumpEn)
+    .JumpEn(JumpEn),
+    .pcbranch(pcbranch),
+    .adopt_branch_output(adopt_branch),
+
+    .instrAddr_to_predict(_predictor_instrAddr_to_predict),
+    .branch_prediction(_predictor_branch_prediction)
 );
 
 execute execute_inst(
@@ -175,7 +202,11 @@ memory memory_inst(
     .csrJump(csrJump),
 
     .priviledgeModeWrite(priviledgeModeWrite),
-    .newPriviledgeMode(newPriviledgeMode)
+    .newPriviledgeMode(newPriviledgeMode),
+
+    .feedback_valid(_predictor_feedback_valid),
+    .feedback_pc(_predictor_instrAddr_to_feedback),
+    .feedback_result(_predictor_feedback_branch_taken)
 );
 
 writeback writeback_inst(

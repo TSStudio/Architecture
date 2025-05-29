@@ -324,6 +324,10 @@ typedef struct packed {
 
     logic exception_valid;
     exception_t exception;
+
+    u64 addr_if_jump; // address to jump to if jump is taken
+    u64 addr_if_not_jump; // address to jump to if jump is not taken
+    logic adopt_branch; // if true, branch is adopted, otherwise, it is not adopted
 } REG_ID_EX;
 
 typedef struct packed {
@@ -353,6 +357,10 @@ typedef struct packed {
 
     logic exception_valid;
     exception_t exception;
+
+    u64 addr_if_jump; // address to jump to if jump is taken
+    u64 addr_if_not_jump; // address to jump to if jump is not taken
+    logic adopt_branch; // if true, branch is adopted, otherwise, it is not adopted
 } REG_EX_MEM;
 
 typedef struct packed {

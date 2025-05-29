@@ -20,7 +20,13 @@ module decoder import common::*;(
     output u12 CSR_addr,
     input u64 CSR_value,
 
-    input logic JumpEn
+    input logic JumpEn,
+
+    output u64 pcbranch,
+    output logic adopt_branch_output,
+
+    output u64 instrAddr_to_predict,
+    input logic branch_prediction
 );
 
 u64 imm;
@@ -83,6 +89,13 @@ assign rs2DataOutS2 = fwdSrc2.valid & fwdSrc2.isWb & fwdSrc2.wd == rs2 ? fwdSrc2
 
 assign ok_to_proceed = 1; // always proceed
 
+assign instrAddr_to_predict = moduleIn.pc;
+assign pcbranch = ((moduleIn.instr[6:0]==7'b1100111)?rs1DataOutS2:moduleIn.pc) + imm;
+logic adopt_branch;
+// assign adopt_branch = 0; // no branch prediction
+assign adopt_branch = isJump | (isBranch & branch_prediction); // adopt branch if it is a jump or if it is a branch and the prediction result is true
+assign adopt_branch_output = adopt_branch & moduleIn.valid & (isBranch|isJump); // no branch prediction
+
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         moduleOut.valid <= 0;
@@ -141,6 +154,10 @@ always_ff @(posedge clk or posedge rst) begin
 
         moduleOut.instrAddr <= moduleIn.instrAddr;
         moduleOut.instr <= moduleIn.instr;
+
+        moduleOut.addr_if_not_jump <= moduleIn.pcPlus4;
+        moduleOut.addr_if_jump <= pcbranch;
+        moduleOut.adopt_branch <= adopt_branch_output;
     end
 end
 

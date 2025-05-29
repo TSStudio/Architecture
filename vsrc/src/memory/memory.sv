@@ -3,6 +3,7 @@
 `include "include/csr.sv"
 `include "src/memory/memory_helper.sv"
 `include "src/memory/memory_solver.sv"
+`include "src/memory/prediction_util.sv"
 `endif
 
 module memory import common::*; import csr_pkg::*;(
@@ -28,7 +29,11 @@ module memory import common::*; import csr_pkg::*;(
     input u64 mtvec,
     input u64 mepc,
     input u64 mstatus,
-    input logic skip
+    input logic skip,
+
+    output logic feedback_valid,
+    output u64 feedback_pc,
+    output logic feedback_result
 );
 
 logic cur_mem_op_done;
@@ -37,20 +42,38 @@ logic cur_mem_op_started;
 
 assign ok_to_proceed = ~(moduleIn.valid) | ~(moduleIn.isMemRead|moduleIn.isMemWrite) | cur_mem_op_done;
 
-assign JumpEn = ((moduleIn.isJump|(moduleIn.isBranch&moduleIn.flagResult)|moduleIn.isCSRWrite) & moduleIn.valid) | exception!=NO_EXCEPTION;
+assign JumpEn = (
+    (moduleIn.adopt_branch!=
+        (moduleIn.isJump|(moduleIn.isBranch&moduleIn.flagResult))
+    |moduleIn.isCSRWrite) 
+& moduleIn.valid) | exception!=NO_EXCEPTION;
+
+assign feedback_valid = moduleIn.valid & moduleIn.isBranch & prediction_util_valid;
+assign feedback_pc = moduleIn.instrAddr;
+assign feedback_result = moduleIn.flagResult;
 
 assign csrJump = ((moduleIn.isCSRWrite) & moduleIn.valid) | exception!=NO_EXCEPTION;
 
 assign JumpAddr = exception!=NO_EXCEPTION? mtvec:
     moduleIn.isCSRWrite? (
         moduleIn.csr_op==ETRAP&&moduleIn.trap==MRET? mepc: moduleIn.pcPlus4
-    ): 
-      {moduleIn.aluOut[63:1],1'b0};
+    ): (moduleIn.isJump|(moduleIn.isBranch&moduleIn.flagResult))?
+      {moduleIn.addr_if_jump[63:1],1'b0}:{moduleIn.addr_if_not_jump[63:1],1'b0};
 
 assign forwardSource.valid = moduleIn.valid & moduleIn.wd != 0;
 assign forwardSource.isWb = moduleIn.isWriteBack;
 assign forwardSource.wd = moduleIn.wd;
-assign forwardSource.wdData = moduleIn.isMemRead ? dataOut:moduleIn.aluOut;
+assign forwardSource.wdData = moduleIn.isJump?moduleIn.pcPlus4 : moduleIn.isMemRead ? dataOut:moduleIn.aluOut;
+
+prediction_util prediction_util_inst(
+    .clk(clk),
+    .rst(rst),
+    .valid(prediction_util_valid),
+    .isPrediction((moduleIn.isJump|moduleIn.isBranch) & moduleIn.valid),
+    .predictionHit(moduleIn.adopt_branch==(moduleIn.isJump|(moduleIn.isBranch&moduleIn.flagResult)))
+);
+
+logic prediction_util_valid;
 
 msize_t msize;
 strobe_t strobe;
@@ -97,6 +120,8 @@ always_ff @(posedge clk or posedge rst) begin
         cur_mem_op_done <= 0;
     end else begin 
         if(ok_to_proceed_overall) begin
+            prediction_util_valid <= 1;
+
             moduleOut.valid <= moduleIn.valid | exception!=NO_EXCEPTION;
             moduleOut.aluOut <= moduleIn.aluOut;
             moduleOut.pcPlus4 <= moduleIn.pcPlus4;
@@ -177,6 +202,8 @@ always_ff @(posedge clk or posedge rst) begin
 
             cur_mem_op_done <= 0;
             cur_mem_op_started <= 0;
+        end else begin 
+            prediction_util_valid <= 0;
         end
         if(dresp.addr_ok & dresp.data_ok & cur_mem_op_started) begin
             cur_mem_data <= dresp.data;

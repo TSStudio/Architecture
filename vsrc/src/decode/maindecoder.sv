@@ -144,7 +144,7 @@ assign wd = instr[11:7];
 assign srcA = (instr[6:0]==7'b0110111)?2'b00: // lui : 0
               (instr[6:0]==7'b1110011)?2'b00: // csr : 0
               (instr[6:0]==7'b0010111)?2'b10: // auipc : pc
-              (instr[6:0]==7'b1100011)?2'b10: // branch: pc+4
+              (instr[6:0]==7'b1100011)?2'b10: // branch: pc
               (instr[6:0]==7'b1101111)?2'b10: // jal: pc
               (2'b01); // rest: rs1
 

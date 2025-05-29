@@ -26,7 +26,10 @@ module programCounter import common::*;(
     input u2 priviledgeMode,
     input u64 mstatus,
     input u64 mip,
-    input u64 mie
+    input u64 mie,
+
+    input u64 pcbranch,
+    input logic adopt_branch
 );
 
 logic intEn;
@@ -87,7 +90,21 @@ always_ff @(posedge clk or posedge rst) begin
                     instr_ok <= 0;
                 end
                 stall <= csrJump;
-            end else if(~lwHold & ~stall & ~intEn & ~mis_align) begin 
+            end else if(adopt_branch) begin
+                moduleOut.valid <= 0;
+                moduleOut.exception_valid <= 0;
+                curPC <= pcbranch;
+                nextPC <= pcbranch + 4;
+                if(pcbranch[1:0] != 2'b00) begin
+                    mis_align <= 1;
+                    instr_ok <= 1;
+                end else begin
+                    ibus_req.addr <= pcbranch;
+                    ibus_req.valid <= 1;
+                    mis_align <= 0;
+                    instr_ok <= 0;
+                end
+            end else if(~lwHold & ~stall & ~intEn & ~mis_align & ~adopt_branch) begin 
                 moduleOut.valid <= 1;
                 moduleOut.pc <= curPC;
                 moduleOut.pcPlus4 <= curPC+4;
