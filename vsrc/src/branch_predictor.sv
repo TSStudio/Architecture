@@ -26,12 +26,12 @@ always_ff @(posedge clk or posedge rst) begin
     end else if (feedback_valid) begin
         // Update prediction table based on feedback
         if (feedback_branch_taken) begin
-            if (prediction_table[instrAddr_to_feedback[9:0]] < 2'b11) begin
-                prediction_table[instrAddr_to_feedback[9:0]] <= prediction_table[instrAddr_to_feedback[9:0]] + 1;
+            if (prediction_table[instrAddr_to_feedback[11:2]] < 2'b11) begin
+                prediction_table[instrAddr_to_feedback[11:2]] <= prediction_table[instrAddr_to_feedback[11:2]] + 1;
             end
         end else begin
-            if (prediction_table[instrAddr_to_feedback[9:0]] > 2'b00) begin
-                prediction_table[instrAddr_to_feedback[9:0]] <= prediction_table[instrAddr_to_feedback[9:0]] - 1;
+            if (prediction_table[instrAddr_to_feedback[11:2]] > 2'b00) begin
+                prediction_table[instrAddr_to_feedback[11:2]] <= prediction_table[instrAddr_to_feedback[11:2]] - 1;
             end
         end
     end
