@@ -15,7 +15,7 @@ module branch_predictor import common::*;(
 // 1024 prediction table
 u2 prediction_table[0:1023];
 
-assign branch_prediction = prediction_table[instrAddr_to_predict[9:0]][1];
+assign branch_prediction = prediction_table[instrAddr_to_predict[11:2]][1];
 
 always_ff @(posedge clk or posedge rst) begin
     if (rst) begin
