@@ -29,7 +29,7 @@ always_ff @(posedge clk) begin
                 succ_branch <= succ_branch + 1;
             end
         end
-        if(print_cnt[24] == 1)begin // 每隔固定的时间输出结果
+        if(print_cnt[25] == 1)begin // 每隔固定的时间输出结果
             $display("total_jump:%.2f ", total_branch);
             $display("branch success:%.2f%%", (succ_branch/total_branch)*100);
             print_cnt <= '0;	

@@ -145,6 +145,7 @@ always_ff @(posedge clk or posedge reset) begin
                     // 写入cache，按strobe
                     new_data = request_from_mmu.is_write ? ((request_from_mmu.data & strobe_mask) | (response_from_mem.data & ~strobe_mask)) : response_from_mem.data;
                     cache[set_idx][free_idx] <= '{valid:1, dirty:request_from_mmu.is_write, tag:tag, time_stamp:$time, data:new_data};
+                    response_to_mmu <= '{ready:1, last:1, data:new_data};
                     state <= S_RESPONDING;
                 end else if (cache[set_idx][lru_idx].dirty) begin
                     request_to_mem <= '{
@@ -161,6 +162,7 @@ always_ff @(posedge clk or posedge reset) begin
                 end else begin
                     new_data = request_from_mmu.is_write ? ((request_from_mmu.data & strobe_mask) | (response_from_mem.data & ~strobe_mask)) : response_from_mem.data;
                     cache[set_idx][lru_idx] <= '{valid:1, dirty:request_from_mmu.is_write, tag:tag, time_stamp:$time, data:new_data};
+                    response_to_mmu <= '{ready:1, last:1, data:new_data};
                     state <= S_RESPONDING;
                 end
             end
@@ -171,6 +173,7 @@ always_ff @(posedge clk or posedge reset) begin
                 lru_idx = (cache[set_idx][0].time_stamp < cache[set_idx][1].time_stamp) ? 0 : 1;
                 new_data = request_from_mmu.is_write ? ((request_from_mmu.data & strobe_mask) | (temp_data & ~strobe_mask)) : temp_data;
                 cache[set_idx][lru_idx] <= '{valid:1, dirty:request_from_mmu.is_write, tag:tag, time_stamp:$time, data:new_data};
+                response_to_mmu <= '{ready:1, last:1, data:new_data};
                 state <= S_RESPONDING;
             end
         end
@@ -187,9 +190,10 @@ always_ff @(posedge clk or posedge reset) begin
                 if (cache[set_idx][i].tag == tag && cache[set_idx][i].valid) idx = i;
             end
 
-            response_to_mmu <= '{ready:1, last:1, data:cache[set_idx][idx].data};
+            
             if (idx != -1) cache[set_idx][idx].time_stamp <= $time;
-            state <= S_OK;
+            response_to_mmu <= '{default:0};
+            state <= S_IDLE;
         end
         S_OK: begin
             state <= S_IDLE;
