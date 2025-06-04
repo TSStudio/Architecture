@@ -110,7 +110,7 @@ always_ff @(posedge clk or posedge reset) begin
                             cache[set_idx][hit_idx].data <= (request_from_mmu.data & strobe_mask) | (cache[set_idx][hit_idx].data & ~strobe_mask);
                             cache[set_idx][hit_idx].dirty <= 1;
                         end
-                        state <= S_RESPONDING;
+                        state <= S_OK;
                     end else begin
                         request_to_mem <= '{
                             valid: 1,

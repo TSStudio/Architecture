@@ -54,54 +54,40 @@ module CBusArbiter
         .skip(skip)
     );
 
-    logic busy;
-    int index, select;
-    cbus_req_t saved_req, selected_req;
-
-    // assign oreq_middle = ireqs[index];
-    assign oreq_middle = busy ? ireqs[index] : '0;  // prevent early issue
-    assign selected_req = ireqs[select];
-
-    // select a preferred request
+    integer selected;
+    logic selected_busy;
+    integer smallest_valid_index;
+    assign selected_busy = oreq_middle.valid;
     always_comb begin
-        select = 0;
-
+        smallest_valid_index = -1;
         for (int i = 0; i < NUM_INPUTS; i++) begin
             if (ireqs[i].valid) begin
-                select = i;
+                smallest_valid_index = i;
                 break;
             end
         end
     end
-
-    // feedback to selected request
     always_comb begin
-        iresps = '0;
-
-        if (busy) begin
-            for (int i = 0; i < NUM_INPUTS; i++) begin
-                if (index == i)
-                    iresps[i] = oresp_middle;
+        if(selected == -1) begin
+            oreq_middle = '0;
+            oreq_middle.valid = 0;
+        end else begin
+            oreq_middle = ireqs[selected];
+        end
+        for (int i = 0; i < NUM_INPUTS; i++) begin
+            if (i == selected) begin
+                iresps[i] = oresp_middle;
+            end else begin
+                iresps[i] = '0;
             end
         end
     end
-
-    always_ff @(posedge clk or posedge reset)
-    if (reset) begin
-        {busy, index, saved_req} <= '0;
-    end else begin
-        if (busy) begin
-            if (oresp_middle.last)
-                {busy, saved_req} <= '0;
-        end else begin
-            // if not valid, busy <= 0
-            busy <= selected_req.valid;
-            index <= select;
-            saved_req <= selected_req;
+    
+    always_ff @(posedge clk or negedge clk) begin
+        if(!selected_busy) begin 
+            selected <= smallest_valid_index;
         end
     end
-
-    `UNUSED_OK({saved_req});
 endmodule
 
 
