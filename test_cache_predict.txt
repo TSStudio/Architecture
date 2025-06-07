@@ -1,0 +1,746 @@
+rm -rf build
+mkdir -p build
+make EMU_TRACE=1 emu -j12 NOOP_HOME=/home/tmysam/Architecture NEMU_HOME=/home/tmysam/Architecture/ready-to-run
+make[1]: Entering directory '/home/tmysam/Architecture'
+make -C ./difftest emu 
+make[2]: Entering directory '/home/tmysam/Architecture/difftest'
+mkdir -p /home/tmysam/Architecture/build
+gcc scripts/utils/lock-emu.c -o /home/tmysam/Architecture/build/lock-emu
+Wed, 04 Jun 2025 21:02:40 +0800
+verilator --cc --exe --top-module SimTop +define+VERILATOR=1 +define+PRINTF_COND=1 +define+RANDOMIZE_REG_INIT +define+RANDOMIZE_MEM_INIT +define+RANDOMIZE_GARBAGE_ASSIGN +define+RANDOMIZE_DELAY=3 +define+BENCHMARK=0 -I/home/tmysam/Architecture/build/../vsrc --x-assign unique -O3 -CFLAGS "-g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1" -LDFLAGS "-lpthread -lSDL2 -ldl -lz" --trace --assert --stats-vars --output-split 30000 --output-split-cfuncs 30000 --trace-fst --trace-structs --no-trace-params -y ../vsrc/ram  \
+	-o /home/tmysam/Architecture/build/emu -Mdir ../build/emu-compile ../build/../vsrc/SimTop.sv ./src/test/vsrc/common/SimJTAG.v ./src/test/vsrc/common/assert.v ./src/test/vsrc/common/difftest.v ./src/test/vsrc/common/ref.v ./src/test/vsrc/common/EICG_wrapper.v ./src/test/vsrc/common/ram.sv ./src/test/vsrc/common/ram.v /home/tmysam/Architecture/difftest/src/test/csrc/vcs/main.cpp /home/tmysam/Architecture/difftest/src/test/csrc/difftest/difftest.cpp /home/tmysam/Architecture/difftest/src/test/csrc/difftest/goldenmem.cpp /home/tmysam/Architecture/difftest/src/test/csrc/difftest/ref.cpp /home/tmysam/Architecture/difftest/src/test/csrc/difftest/spikedasm.cpp /home/tmysam/Architecture/difftest/src/test/csrc/difftest/nemuproxy.cpp /home/tmysam/Architecture/difftest/src/test/csrc/difftest/interface.cpp /home/tmysam/Architecture/difftest/src/test/csrc/verilator/emu.cpp /home/tmysam/Architecture/difftest/src/test/csrc/verilator/main.cpp /home/tmysam/Architecture/difftest/src/test/csrc/verilator/snapshot.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/compress.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/remote_bitbang.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/uart.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/SimJTAG.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/ram.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/common.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/axi4.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/sdcard.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/vga.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/flash.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/keyboard.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/device.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/compress.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/remote_bitbang.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/uart.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/SimJTAG.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/ram.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/common.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/axi4.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/sdcard.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/vga.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/flash.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/keyboard.cpp /home/tmysam/Architecture/difftest/src/test/csrc/common/device.cpp /home/tmysam/Architecture/difftest/src/test/csrc/difftest/difftest.cpp /home/tmysam/Architecture/difftest/src/test/csrc/difftest/goldenmem.cpp /home/tmysam/Architecture/difftest/src/test/csrc/difftest/ref.cpp /home/tmysam/Architecture/difftest/src/test/csrc/difftest/spikedasm.cpp /home/tmysam/Architecture/difftest/src/test/csrc/difftest/nemuproxy.cpp /home/tmysam/Architecture/difftest/src/test/csrc/difftest/interface.cpp
+- V e r i l a t i o n   R e p o r t: Verilator 5.032 2025-01-01 rev v5.032
+- Verilator: Built from 6.247 MB sources in 48 modules, into 3.068 MB in 29 C++ files needing 0.003 MB
+- Verilator: Walltime 0.248 s (elab=0.009, cvt=0.191, bld=0.000); cpu 0.248 s on 1 threads; alloced 51.527 MB
+make build_emu_local
+make[3]: Entering directory '/home/tmysam/Architecture/difftest'
+Wed, 04 Jun 2025 21:02:41 +0800
+make VM_PARALLEL_BUILDS=1 OPT_FAST="-O3" -C ../build/emu-compile -f VSimTop.mk 
+make[4]: Entering directory '/home/tmysam/Architecture/build/emu-compile'
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o SimJTAG.o /home/tmysam/Architecture/difftest/src/test/csrc/common/SimJTAG.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o axi4.o /home/tmysam/Architecture/difftest/src/test/csrc/common/axi4.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o common.o /home/tmysam/Architecture/difftest/src/test/csrc/common/common.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o compress.o /home/tmysam/Architecture/difftest/src/test/csrc/common/compress.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o device.o /home/tmysam/Architecture/difftest/src/test/csrc/common/device.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o flash.o /home/tmysam/Architecture/difftest/src/test/csrc/common/flash.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o keyboard.o /home/tmysam/Architecture/difftest/src/test/csrc/common/keyboard.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o ram.o /home/tmysam/Architecture/difftest/src/test/csrc/common/ram.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o remote_bitbang.o /home/tmysam/Architecture/difftest/src/test/csrc/common/remote_bitbang.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o sdcard.o /home/tmysam/Architecture/difftest/src/test/csrc/common/sdcard.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o uart.o /home/tmysam/Architecture/difftest/src/test/csrc/common/uart.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o vga.o /home/tmysam/Architecture/difftest/src/test/csrc/common/vga.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o difftest.o /home/tmysam/Architecture/difftest/src/test/csrc/difftest/difftest.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o goldenmem.o /home/tmysam/Architecture/difftest/src/test/csrc/difftest/goldenmem.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o interface.o /home/tmysam/Architecture/difftest/src/test/csrc/difftest/interface.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o nemuproxy.o /home/tmysam/Architecture/difftest/src/test/csrc/difftest/nemuproxy.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o ref.o /home/tmysam/Architecture/difftest/src/test/csrc/difftest/ref.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o spikedasm.o /home/tmysam/Architecture/difftest/src/test/csrc/difftest/spikedasm.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o main.o /home/tmysam/Architecture/difftest/src/test/csrc/verilator/main.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o emu.o /home/tmysam/Architecture/difftest/src/test/csrc/verilator/emu.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -O3  -c -o snapshot.o /home/tmysam/Architecture/difftest/src/test/csrc/verilator/snapshot.cpp
+ccache g++ -Os  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -c -o verilated.o /usr/local/share/verilator/include/verilated.cpp
+ccache g++ -Os  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -c -o verilated_dpi.o /usr/local/share/verilator/include/verilated_dpi.cpp
+ccache g++ -Os  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -c -o verilated_fst_c.o /usr/local/share/verilator/include/verilated_fst_c.cpp
+ccache g++ -Os  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -c -o verilated_threads.o /usr/local/share/verilator/include/verilated_threads.cpp
+ccache g++ -O3  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -x c++-header VSimTop__pch.h -o VSimTop__pch.h.fast.gch
+ccache g++   -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -x c++-header VSimTop__pch.h -o VSimTop__pch.h.slow.gch
+echo "" > VSimTop__ALL.verilator_deplist.tmp
+ccache g++   -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -include VSimTop__pch.h.slow -c -o VSimTop__ConstPool_0.o VSimTop__ConstPool_0.cpp
+ccache g++   -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -include VSimTop__pch.h.slow -c -o VSimTop___024root__Slow.o VSimTop___024root__Slow.cpp
+ccache g++   -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -include VSimTop__pch.h.slow -c -o VSimTop___024root__DepSet_h278d43d2__0__Slow.o VSimTop___024root__DepSet_h278d43d2__0__Slow.cpp
+ccache g++   -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -include VSimTop__pch.h.slow -c -o VSimTop___024root__DepSet_hd5918264__0__Slow.o VSimTop___024root__DepSet_hd5918264__0__Slow.cpp
+ccache g++   -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -include VSimTop__pch.h.slow -c -o VSimTop___024unit__Slow.o VSimTop___024unit__Slow.cpp
+ccache g++   -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -include VSimTop__pch.h.slow -c -o VSimTop___024unit__DepSet_hab1093f9__0__Slow.o VSimTop___024unit__DepSet_hab1093f9__0__Slow.cpp
+ccache g++   -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -include VSimTop__pch.h.slow -c -o VSimTop__Syms.o VSimTop__Syms.cpp
+ccache g++   -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -include VSimTop__pch.h.slow -c -o VSimTop__Trace__0__Slow.o VSimTop__Trace__0__Slow.cpp
+ccache g++   -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -include VSimTop__pch.h.slow -c -o VSimTop__TraceDecls__0__Slow.o VSimTop__TraceDecls__0__Slow.cpp
+ccache g++ -O3  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -include VSimTop__pch.h.fast -c -o VSimTop.o VSimTop.cpp
+ccache g++ -O3  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -include VSimTop__pch.h.fast -c -o VSimTop___024root__DepSet_h278d43d2__0.o VSimTop___024root__DepSet_h278d43d2__0.cpp
+ccache g++ -O3  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -include VSimTop__pch.h.fast -c -o VSimTop___024root__DepSet_hd5918264__0.o VSimTop___024root__DepSet_hd5918264__0.cpp
+ccache g++ -O3  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -include VSimTop__pch.h.fast -c -o VSimTop___024unit__DepSet_hd90c3539__0.o VSimTop___024unit__DepSet_hd90c3539__0.cpp
+ccache g++ -O3  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -include VSimTop__pch.h.fast -c -o VSimTop__Dpi.o VSimTop__Dpi.cpp
+ccache g++ -O3  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -g -std=c++2a -static -Wall -I/home/tmysam/Architecture/difftest/src/test/csrc -I/home/tmysam/Architecture/difftest/src/test/csrc/common -I/home/tmysam/Architecture/difftest/src/test/csrc/difftest -DVERILATOR -Wno-maybe-uninitialized  -DNUM_CORES=1   -include VSimTop__pch.h.fast -c -o VSimTop__Trace__0.o VSimTop__Trace__0.cpp
+g++    SimJTAG.o axi4.o common.o compress.o device.o flash.o keyboard.o ram.o remote_bitbang.o sdcard.o uart.o vga.o difftest.o goldenmem.o interface.o nemuproxy.o ref.o spikedasm.o main.o emu.o snapshot.o verilated.o verilated_dpi.o verilated_fst_c.o verilated_threads.o VSimTop__ALL.a   -lpthread -lSDL2 -ldl -lz -lz  -pthread -lpthread -latomic   -o /home/tmysam/Architecture/build/emu
+rm VSimTop__ALL.verilator_deplist.tmp
+make[4]: Leaving directory '/home/tmysam/Architecture/build/emu-compile'
+make[3]: Leaving directory '/home/tmysam/Architecture/difftest'
+make[2]: Leaving directory '/home/tmysam/Architecture/difftest'
+make[1]: Leaving directory '/home/tmysam/Architecture'
+TEST= ./build/emu --diff /home/tmysam/Architecture/ready-to-run/riscv64-nemu-interpreter-so -i ./ready-to-run/lab+/microbench-riscv64-nutshell.bin  || true
+[1;34m[src/device/io/mmio.c:18,add_mmio_map] Add mmio map 'clint' at [0xa2000000, 0xa200ffff][0m
+[1;34m[src/device/io/mmio.c:18,add_mmio_map] Add mmio map 'uartlite' at [0x40600000, 0x4060000c][0m
+[1;34m[src/device/io/mmio.c:18,add_mmio_map] Add mmio map 'uartlite1' at [0x23333000, 0x2333300f][0m
+Emu compiled at Mar 31 2025, 19:58:25
+The image is ./ready-to-run/lab+/microbench-riscv64-nutshell.bin
+Using simulated 256MB RAM
+Using /home/tmysam/Architecture/ready-to-run/riscv64-nemu-interpreter-so for difftest
+The first instruction of core 0 has commited. Difftest enabled. 
+Empty mainargs. Use "ref" by default
+======= Running MicroBench [input *ref*] =======
+[qsort] Quick sort: total_jump:1232720.00 
+branch success:92.83%
+total_jump:2519373.00 
+branch success:87.52%
+total_jump:3794493.00 
+branch success:85.52%
+total_jump:5084749.00 
+branch success:84.46%
+* Passed.
+  min time: 5 ms [102280]
+[queen] Queen placement: total_jump:6127243.00 
+branch success:83.85%
+total_jump:7058432.00 
+branch success:83.55%
+total_jump:7987772.00 
+branch success:83.29%
+total_jump:8918410.00 
+branch success:83.11%
+* Passed.
+  min time: 6 ms [78450]
+[bf] Brainf**k interpreter: total_jump:9926105.00 
+branch success:83.20%
+total_jump:11985193.00 
+branch success:86.00%
+total_jump:14040019.00 
+branch success:88.00%
+total_jump:16104187.00 
+branch success:89.51%
+total_jump:18161793.00 
+branch success:90.68%
+total_jump:20224786.00 
+branch success:91.61%
+total_jump:22286722.00 
+branch success:92.37%
+total_jump:24345245.00 
+branch success:93.01%
+total_jump:26406285.00 
+branch success:93.54%
+total_jump:28463809.00 
+branch success:94.00%
+total_jump:30524838.00 
+branch success:94.40%
+total_jump:32587768.00 
+branch success:94.75%
+total_jump:34641424.00 
+branch success:95.05%
+total_jump:36697061.00 
+branch success:95.29%
+total_jump:38758583.00 
+branch success:95.52%
+total_jump:40824235.00 
+branch success:95.73%
+total_jump:42893503.00 
+branch success:95.93%
+total_jump:44950384.00 
+branch success:96.09%
+total_jump:47016019.00 
+branch success:96.24%
+total_jump:49059288.00 
+branch success:96.38%
+total_jump:51079853.00 
+branch success:96.48%
+total_jump:53134118.00 
+branch success:96.59%
+total_jump:55153941.00 
+branch success:96.69%
+total_jump:57199027.00 
+branch success:96.78%
+total_jump:59253043.00 
+branch success:96.87%
+total_jump:61283169.00 
+branch success:96.95%
+total_jump:63340651.00 
+branch success:97.05%
+total_jump:65384541.00 
+branch success:97.12%
+total_jump:67447653.00 
+branch success:97.20%
+total_jump:69509191.00 
+branch success:97.27%
+total_jump:71543207.00 
+branch success:97.32%
+total_jump:73592172.00 
+branch success:97.38%
+* Passed.
+  min time: 41 ms [57739]
+[fib] Fibonacci number: total_jump:75253654.00 
+branch success:97.41%
+total_jump:75961322.00 
+branch success:97.43%
+total_jump:76635919.00 
+branch success:97.44%
+total_jump:77348176.00 
+branch success:97.46%
+total_jump:78022657.00 
+branch success:97.47%
+total_jump:78695472.00 
+branch success:97.48%
+total_jump:79368296.00 
+branch success:97.49%
+total_jump:80063576.00 
+branch success:97.50%
+total_jump:80760028.00 
+branch success:97.52%
+total_jump:81432849.00 
+branch success:97.53%
+total_jump:82112458.00 
+branch success:97.54%
+total_jump:82824537.00 
+branch success:97.55%
+total_jump:83494188.00 
+branch success:97.56%
+total_jump:84206972.00 
+branch success:97.57%
+total_jump:84885905.00 
+branch success:97.58%
+total_jump:85589255.00 
+branch success:97.59%
+total_jump:86277664.00 
+branch success:97.60%
+total_jump:86971501.00 
+branch success:97.62%
+total_jump:87669407.00 
+branch success:97.63%
+total_jump:88353732.00 
+branch success:97.64%
+total_jump:89061079.00 
+branch success:97.65%
+total_jump:89735908.00 
+branch success:97.65%
+total_jump:90448136.00 
+branch success:97.66%
+total_jump:91122408.00 
+branch success:97.67%
+total_jump:91830423.00 
+branch success:97.68%
+total_jump:92514101.00 
+branch success:97.69%
+total_jump:93212715.00 
+branch success:97.70%
+total_jump:93905898.00 
+branch success:97.71%
+total_jump:94594972.00 
+branch success:97.72%
+total_jump:95297640.00 
+branch success:97.73%
+total_jump:95977199.00 
+branch success:97.74%
+total_jump:96689397.00 
+branch success:97.74%
+total_jump:97359038.00 
+branch success:97.75%
+total_jump:98071736.00 
+branch success:97.76%
+total_jump:98750757.00 
+branch success:97.77%
+total_jump:99453992.00 
+branch success:97.78%
+total_jump:100142451.00 
+branch success:97.78%
+total_jump:100836237.00 
+branch success:97.79%
+total_jump:101534180.00 
+branch success:97.80%
+total_jump:102218480.00 
+branch success:97.81%
+total_jump:102925910.00 
+branch success:97.81%
+total_jump:103600740.00 
+branch success:97.82%
+total_jump:104312977.00 
+branch success:97.83%
+total_jump:104987273.00 
+branch success:97.84%
+total_jump:105695217.00 
+branch success:97.84%
+total_jump:106378930.00 
+branch success:97.85%
+total_jump:107077398.00 
+branch success:97.86%
+total_jump:107770614.00 
+branch success:97.86%
+total_jump:108459619.00 
+branch success:97.87%
+total_jump:109162369.00 
+branch success:97.88%
+total_jump:109841894.00 
+branch success:97.88%
+total_jump:110554099.00 
+branch success:97.89%
+total_jump:111223735.00 
+branch success:97.90%
+total_jump:111936452.00 
+branch success:97.90%
+total_jump:112615540.00 
+branch success:97.91%
+total_jump:113318766.00 
+branch success:97.91%
+total_jump:114007327.00 
+branch success:97.92%
+total_jump:114701082.00 
+branch success:97.93%
+total_jump:115399050.00 
+branch success:97.93%
+total_jump:116083306.00 
+branch success:97.94%
+total_jump:116790833.00 
+branch success:97.94%
+total_jump:117465609.00 
+branch success:97.95%
+total_jump:118177816.00 
+branch success:97.95%
+total_jump:118852148.00 
+branch success:97.96%
+total_jump:119560044.00 
+branch success:97.97%
+total_jump:120243866.00 
+branch success:97.97%
+* Passed.
+  min time: 85 ms [33315]
+[sieve] Eratosthenes sieve: total_jump:121629328.00 
+branch success:97.99%
+total_jump:123600712.00 
+branch success:98.02%
+total_jump:125572077.00 
+branch success:98.05%
+total_jump:127543451.00 
+branch success:98.08%
+total_jump:129514841.00 
+branch success:98.11%
+total_jump:131486207.00 
+branch success:98.14%
+total_jump:133457596.00 
+branch success:98.17%
+total_jump:135428985.00 
+branch success:98.20%
+total_jump:137400362.00 
+branch success:98.22%
+total_jump:139371727.00 
+branch success:98.25%
+total_jump:141128868.00 
+branch success:98.27%
+total_jump:141924624.00 
+branch success:98.28%
+total_jump:142720382.00 
+branch success:98.29%
+total_jump:143516135.00 
+branch success:98.30%
+total_jump:144311903.00 
+branch success:98.31%
+total_jump:145107667.00 
+branch success:98.32%
+total_jump:145903419.00 
+branch success:98.33%
+total_jump:146697771.00 
+branch success:98.33%
+total_jump:147491967.00 
+branch success:98.34%
+total_jump:148286168.00 
+branch success:98.35%
+total_jump:149080365.00 
+branch success:98.36%
+total_jump:149872366.00 
+branch success:98.37%
+total_jump:150663419.00 
+branch success:98.38%
+total_jump:151453946.00 
+branch success:98.39%
+total_jump:152241937.00 
+branch success:98.40%
+total_jump:153027709.00 
+branch success:98.40%
+total_jump:153808960.00 
+branch success:98.41%
+total_jump:154586553.00 
+branch success:98.42%
+total_jump:155358098.00 
+branch success:98.43%
+total_jump:156121852.00 
+branch success:98.44%
+total_jump:156872598.00 
+branch success:98.44%
+total_jump:157608321.00 
+branch success:98.45%
+total_jump:158323120.00 
+branch success:98.46%
+total_jump:159032029.00 
+branch success:98.46%
+total_jump:159741008.00 
+branch success:98.47%
+total_jump:160449908.00 
+branch success:98.48%
+total_jump:161158885.00 
+branch success:98.48%
+total_jump:161867939.00 
+branch success:98.49%
+total_jump:162577142.00 
+branch success:98.50%
+total_jump:163286550.00 
+branch success:98.50%
+total_jump:163996111.00 
+branch success:98.51%
+total_jump:165037856.00 
+branch success:98.50%
+total_jump:166806832.00 
+branch success:98.48%
+total_jump:168578340.00 
+branch success:98.46%
+total_jump:170351069.00 
+branch success:98.44%
+total_jump:172124566.00 
+branch success:98.42%
+total_jump:173898629.00 
+branch success:98.41%
+total_jump:175673157.00 
+branch success:98.39%
+total_jump:177448091.00 
+branch success:98.37%
+total_jump:179223240.00 
+branch success:98.36%
+total_jump:180998751.00 
+branch success:98.34%
+total_jump:182774469.00 
+branch success:98.33%
+* Passed.
+  min time: 68 ms [57883]
+[15pz] A* 15-puzzle search: total_jump:184543225.00 
+branch success:98.31%
+total_jump:185653456.00 
+branch success:98.24%
+total_jump:186772103.00 
+branch success:98.17%
+total_jump:187905681.00 
+branch success:98.10%
+total_jump:189042080.00 
+branch success:98.03%
+total_jump:190194593.00 
+branch success:97.96%
+total_jump:191369497.00 
+branch success:97.90%
+total_jump:192557869.00 
+branch success:97.83%
+* Passed.
+  min time: 9 ms [49844]
+[dinic] Dinic's maxflow algorithm: total_jump:193585677.00 
+branch success:97.80%
+total_jump:194430088.00 
+branch success:97.79%
+total_jump:195027838.00 
+branch success:97.77%
+total_jump:195592861.00 
+branch success:97.75%
+total_jump:196152479.00 
+branch success:97.73%
+total_jump:196707008.00 
+branch success:97.72%
+total_jump:197258691.00 
+branch success:97.70%
+total_jump:197809460.00 
+branch success:97.69%
+total_jump:198359025.00 
+branch success:97.67%
+total_jump:199067642.00 
+branch success:97.65%
+total_jump:199804568.00 
+branch success:97.65%
+total_jump:200507093.00 
+branch success:97.64%
+total_jump:201253166.00 
+branch success:97.64%
+total_jump:202067635.00 
+branch success:97.63%
+* Passed.
+  min time: 17 ms [64011]
+[lzip] Lzip compression: total_jump:202989135.00 
+branch success:97.64%
+total_jump:203725932.00 
+branch success:97.65%
+total_jump:204462690.00 
+branch success:97.65%
+total_jump:205199514.00 
+branch success:97.66%
+total_jump:206009074.00 
+branch success:97.65%
+total_jump:207061371.00 
+branch success:97.60%
+total_jump:208113964.00 
+branch success:97.55%
+total_jump:209166462.00 
+branch success:97.50%
+total_jump:210219288.00 
+branch success:97.45%
+total_jump:211272469.00 
+branch success:97.40%
+total_jump:212324233.00 
+branch success:97.35%
+total_jump:213375142.00 
+branch success:97.30%
+total_jump:214425834.00 
+branch success:97.25%
+total_jump:215476972.00 
+branch success:97.20%
+total_jump:216528753.00 
+branch success:97.15%
+* Passed.
+  min time: 13 ms [58407]
+[ssort] Suffix sort: total_jump:217795438.00 
+branch success:97.06%
+total_jump:218584308.00 
+branch success:97.06%
+total_jump:219372043.00 
+branch success:97.03%
+total_jump:220070873.00 
+branch success:97.01%
+total_jump:220979727.00 
+branch success:96.96%
+* Passed.
+  min time: 5 ms [90080]
+[md5] MD5 digest: total_jump:222282970.00 
+branch success:96.91%
+total_jump:223699510.00 
+branch success:96.93%
+total_jump:224756814.00 
+branch success:96.95%
+total_jump:225814092.00 
+branch success:96.96%
+total_jump:226871337.00 
+branch success:96.98%
+total_jump:227928627.00 
+branch success:96.99%
+total_jump:228985915.00 
+branch success:97.00%
+total_jump:230043210.00 
+branch success:97.02%
+total_jump:231100527.00 
+branch success:97.03%
+total_jump:232157836.00 
+branch success:97.04%
+total_jump:233215122.00 
+branch success:97.06%
+total_jump:234272436.00 
+branch success:97.07%
+total_jump:235329717.00 
+branch success:97.08%
+total_jump:236387046.00 
+branch success:97.10%
+total_jump:237444367.00 
+branch success:97.11%
+total_jump:238501635.00 
+branch success:97.12%
+total_jump:239558934.00 
+branch success:97.14%
+total_jump:240616234.00 
+branch success:97.15%
+total_jump:241673520.00 
+branch success:97.16%
+total_jump:242730817.00 
+branch success:97.17%
+total_jump:243788113.00 
+branch success:97.18%
+total_jump:244845403.00 
+branch success:97.20%
+total_jump:245902714.00 
+branch success:97.21%
+total_jump:246960012.00 
+branch success:97.22%
+total_jump:248017321.00 
+branch success:97.23%
+total_jump:249074627.00 
+branch success:97.24%
+total_jump:250131894.00 
+branch success:97.26%
+total_jump:251189176.00 
+branch success:97.27%
+total_jump:252246460.00 
+branch success:97.28%
+total_jump:253272764.00 
+branch success:97.29%
+total_jump:254006752.00 
+branch success:97.28%
+total_jump:254740717.00 
+branch success:97.27%
+total_jump:255474681.00 
+branch success:97.25%
+total_jump:256208743.00 
+branch success:97.24%
+total_jump:256942818.00 
+branch success:97.23%
+total_jump:257676860.00 
+branch success:97.22%
+total_jump:258410847.00 
+branch success:97.21%
+total_jump:259144851.00 
+branch success:97.20%
+total_jump:259878880.00 
+branch success:97.19%
+total_jump:260612893.00 
+branch success:97.18%
+total_jump:261346898.00 
+branch success:97.17%
+total_jump:262080920.00 
+branch success:97.15%
+total_jump:262814966.00 
+branch success:97.14%
+total_jump:263548968.00 
+branch success:97.13%
+total_jump:264282994.00 
+branch success:97.12%
+total_jump:265017042.00 
+branch success:97.11%
+total_jump:265751006.00 
+branch success:97.10%
+total_jump:266485058.00 
+branch success:97.09%
+total_jump:267219139.00 
+branch success:97.08%
+total_jump:267953148.00 
+branch success:97.07%
+total_jump:268687174.00 
+branch success:97.06%
+total_jump:269421207.00 
+branch success:97.05%
+total_jump:270155243.00 
+branch success:97.04%
+total_jump:270889350.00 
+branch success:97.03%
+total_jump:271623334.00 
+branch success:97.02%
+total_jump:272357404.00 
+branch success:97.01%
+total_jump:273091414.00 
+branch success:97.00%
+total_jump:273825438.00 
+branch success:96.99%
+total_jump:274559468.00 
+branch success:96.98%
+total_jump:275293498.00 
+branch success:96.97%
+total_jump:276027536.00 
+branch success:96.96%
+total_jump:276761585.00 
+branch success:96.95%
+total_jump:277495635.00 
+branch success:96.94%
+total_jump:278229647.00 
+branch success:96.93%
+total_jump:278963687.00 
+branch success:96.92%
+total_jump:279697709.00 
+branch success:96.91%
+total_jump:280431755.00 
+branch success:96.90%
+total_jump:281165779.00 
+branch success:96.89%
+total_jump:281899809.00 
+branch success:96.88%
+total_jump:282633842.00 
+branch success:96.87%
+total_jump:283367821.00 
+branch success:96.87%
+total_jump:284101848.00 
+branch success:96.86%
+total_jump:284835834.00 
+branch success:96.85%
+total_jump:285569900.00 
+branch success:96.84%
+* Passed.
+  min time: 58 ms [29722]
+==================================================
+MicroBench PASS        62173 Marks
+                   vs. 100000 Marks (i7-7700K @ 4.20GHz)
+Total time: 354 ms
+
+============== Commit Group Trace (Core 0) ==============
+commit group [0]: pc 0080004fe4 cmtcnt 1 
+commit group [1]: pc 0080004fe8 cmtcnt 1 <--
+commit group [2]: pc 0080004534 cmtcnt 1 
+commit group [3]: pc 0080004538 cmtcnt 1 
+commit group [4]: pc 008000453c cmtcnt 1 
+commit group [5]: pc 0080004540 cmtcnt 1 
+commit group [6]: pc 0080004544 cmtcnt 1 
+commit group [7]: pc 0080004548 cmtcnt 1 
+commit group [8]: pc 008000454c cmtcnt 1 
+commit group [9]: pc 0080004550 cmtcnt 1 
+commit group [a]: pc 0080004554 cmtcnt 1 
+commit group [b]: pc 0080004558 cmtcnt 1 
+commit group [c]: pc 0080005014 cmtcnt 1 
+commit group [d]: pc 0080004fd8 cmtcnt 1 
+commit group [e]: pc 0080004fdc cmtcnt 1 
+commit group [f]: pc 0080004fe0 cmtcnt 1 
+
+============== Commit Instr Trace ==============
+commit inst [0]: pc 0080004fe4 inst 00050513 wen 1 dst 0000000a data 0000000000000000 
+commit inst [1]: pc 0080004fe8 inst 0005006b wen 0 dst 0000000a data 0000000000000000 <--
+commit inst [2]: pc 0080004534 inst 06813a83 wen 1 dst 00000015 data 0000000000000000 
+commit inst [3]: pc 0080004538 inst 06013b03 wen 1 dst 00000016 data 0000000000000000 
+commit inst [4]: pc 008000453c inst 05813b83 wen 1 dst 00000017 data 0000000000000000 
+commit inst [5]: pc 0080004540 inst 04813c83 wen 1 dst 00000019 data 0000000000000000 
+commit inst [6]: pc 0080004544 inst 04013d03 wen 1 dst 0000001a data 0000000000000000 
+commit inst [7]: pc 0080004548 inst 03813d83 wen 1 dst 0000001b data 0000000000000000 
+commit inst [8]: pc 008000454c inst 001c4513 wen 1 dst 0000000a data 0000000000000000 
+commit inst [9]: pc 0080004550 inst 05013c03 wen 1 dst 00000018 data 0000000000000000 
+commit inst [a]: pc 0080004554 inst 0a010113 wen 1 dst 00000002 data 000000008000fff0 
+commit inst [b]: pc 0080004558 inst 00008067 wen 1 dst 00000000 data 0000000080005014 
+commit inst [c]: pc 0080005014 inst fc5ff0ef wen 1 dst 00000001 data 0000000080004fd8 
+commit inst [d]: pc 0080004fd8 inst ff010113 wen 1 dst 00000002 data 000000008000ffe0 
+commit inst [e]: pc 0080004fdc inst 00113423 wen 0 dst 00000002 data 000000008000ffe0 
+commit inst [f]: pc 0080004fe0 inst 00050593 wen 1 dst 0000000b data 0000000000000000 
+
+==============  REF Regs  ==============
+[WARNING] difftest store queue overflow
+[1;34m[src/cpu/cpu-exec.c:390,cpu_exec] nemu: [1;32mHIT GOOD TRAP[0m at pc = 0x0000000080004fe8[0m
+[1;34m[src/cpu/cpu-exec.c:394,cpu_exec] trap code:0[0m
+[1;34m[src/cpu/cpu-exec.c:74,monitor_statistic] host time spent = 78866736 us[0m
+[1;34m[src/cpu/cpu-exec.c:76,monitor_statistic] total guest instructions = 1970039011[0m
+[1;34m[src/cpu/cpu-exec.c:77,monitor_statistic] simulation frequency = 24979339 instr/s[0m
+  $0: 0x0000000000000000   ra: 0x0000000080005018   sp: 0x000000008000ffe0   gp: 0x0000000000000000 
+  tp: 0x0000000000000000   t0: 0x0000000000000000   t1: 0x0000000000000000   t2: 0x0000000000000009 
+  s0: 0x0000000000000000   s1: 0x0000000000000000   a0: 0x0000000000000000   a1: 0x0000000000000000 
+  a2: 0x0000000000000013   a3: 0xffffffffffffffff   a4: 0x0000000040600000   a5: 0x0000000000000000 
+  a6: 0x0000000000000000   a7: 0x0000000000000000   s2: 0x0000000000000000   s3: 0x0000000000000000 
+  s4: 0x0000000000000000   s5: 0x0000000000000000   s6: 0x0000000000000000   s7: 0x0000000000000000 
+  s8: 0x0000000000000000   s9: 0x0000000000000000  s10: 0x0000000000000000  s11: 0x0000000000000000 
+  t3: 0x0000000000000000   t4: 0x000000000000000a   t5: 0x000000008000fe03   t6: 0x0000000000000033 
+ ft0: 0x0000000000000024  ft1: 0x0000000000030d02  ft2: 0x0000000000000025  ft3: 0x0000000000000002 
+ ft4: 0x0000000000000026  ft5: 0x0000000000989602  ft6: 0x0000000000000027  ft7: 0x0000000000009902 
+ fs0: 0x0000000000000028  fs1: 0x0000000080000002  fa0: 0x0000000000000029  fa1: 0x0000000080000002 
+ fa2: 0x000000000000002a  fa3: 0x0000000080006c02  fa4: 0x000000000000002b  fa5: 0x0000000000000402 
+ fa6: 0x000000000000002c  fa7: 0x0000000000000002  fs2: 0x000000000000002d  fs3: 0x0000000000040002 
+ fs4: 0x000000000000002e  fs5: 0x000000000000b002  fs6: 0x000000000000002f  fs7: 0x0000000000200002 
+ fs8: 0x0000000000000030  fs9: 0x0000000000068b02 fs10: 0x0000000000000031 fs11: 0x0000000080001602 
+ ft8: 0x0000000000000032  ft9: 0x0000000080006c02 ft10: 0x0000000000000033 ft11: 0x0000000000000002 
+pc: 0x0000000080004fec mstatus: 0x0000000000000000 mcause: 0x0000000000000000 mepc: 0x0000000000000000
+                       sstatus: 0x0000000000000000 scause: 0x0000000000000000 sepc: 0x0000000000000000
+satp: 0x0000000000000000
+mip: 0x0000000000000000 mie: 0x0000000000000000 mscratch: 0x0000000000000000 sscratch: 0x0000000000000000
+mideleg: 0x0000000000000000 medeleg: 0x0000000000000000
+mtval: 0x0000000000000000 stval: 0x0000000000000000 mtvec: 0x0000000000000000 stvec: 0x0000000000000000
+privilege mode:3
+v0 : 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  v1 : 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  
+v2 : 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  v3 : 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  
+v4 : 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  v5 : 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  
+v6 : 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  v7 : 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  
+v8 : 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  v9 : 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  
+v10: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  v11: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  
+v12: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  v13: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  
+v14: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  v15: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  
+v16: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  v17: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  
+v18: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  v19: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  
+v20: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  v21: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  
+v22: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  v23: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  
+v24: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  v25: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  
+v26: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  v27: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  
+v28: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  v29: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  
+v30: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  v31: 0x0000000000000000_0000000000000000_0000000000000000_0000000000000000  
+vtype: 0x0000000000000000 vstart: 0x0000000000000000 vxsat: 0x0000000000000000
+vxrm: 0x0000000000000000 vl: 0x0000000000000000
+priviledgeMode: 3
+mstatus different at pc = 0x0080004fe8, right= 0x0000000000000000, wrong = 0x0000000000001800
+ mcause different at pc = 0x0080004fe8, right= 0x0000000000000000, wrong = 0x0000000000000002
+   mepc different at pc = 0x0080004fe8, right= 0x0000000000000000, wrong = 0x0000000080004fe8
+Core 0: [31mABORT at pc = 0x0
+[0m[35mtotal guest instructions = 0
+[0m[35minstrCnt = 0, cycleCnt = 0, IPC = -nan
+[0m[34mSeed=0 Guest cycle spent: 9207160170 (this will be different from cycleCnt if emu loads a snapshot)
+[0m[34mHost time spent: 1947695ms
+[0m

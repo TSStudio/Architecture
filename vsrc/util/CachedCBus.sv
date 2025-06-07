@@ -1,3 +1,5 @@
+`ifndef cached_cbus
+`define cached_cbus
 `ifdef VERILATOR
 `include "include/common.sv"
 `endif
@@ -205,3 +207,4 @@ always_ff @(posedge clk or posedge reset) begin
 end
 
 endmodule
+`endif // cached_cbus
