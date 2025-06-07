@@ -143,6 +143,7 @@ always_ff @(posedge clk  or posedge rst) begin
         moduleOut.valid <= moduleIn.valid & ~JumpEn;
         moduleOut.exception_valid <= moduleIn.exception_valid & ~JumpEn;
         moduleOut.exception <= moduleIn.exception;
+        moduleOut.rs1 <= moduleIn.rs1;
         moduleOut.rs2 <= moduleIn.rs2;
         moduleOut.aluOut <= datUse;
         moduleOut.pcPlus4 <= moduleIn.pcPlus4;
@@ -169,6 +170,9 @@ always_ff @(posedge clk  or posedge rst) begin
         moduleOut.addr_if_not_jump <= moduleIn.addr_if_not_jump;
         moduleOut.addr_if_jump <= moduleIn.addr_if_jump;
         moduleOut.adopt_branch <= moduleIn.adopt_branch;
+
+        moduleOut.is_amo <= moduleIn.is_amo;
+        moduleOut.amo_type <= moduleIn.amo_type;
 
         req_submitted <= 0;
     end else begin

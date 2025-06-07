@@ -47,7 +47,10 @@ logic isCSRWrite;
 csr_op_t csr_op;
 trap_t trap;
 
-assign lwHold = (isMemRead) & moduleIn.valid & ~JumpEn;
+logic isAMO;
+amo_t amo_type;
+
+assign lwHold = (isMemRead | isAMO) & moduleIn.valid & ~JumpEn;
 
 maindecoder maindecoder_inst(
     .instr(moduleIn.instr),
@@ -76,7 +79,9 @@ maindecoder maindecoder_inst(
     .csr_op(csr_op),
     .CSR_addr(CSR_addr),
     .trap(trap),
-    .illegal(illegal)
+    .illegal(illegal),
+    .isAMO(isAMO),
+    .amo_type(amo_type)
 );
 
 u64 rs1DataOutS1, rs1DataOutS2, rs2DataOutS1, rs2DataOutS2;
@@ -158,6 +163,9 @@ always_ff @(posedge clk or posedge rst) begin
         moduleOut.addr_if_not_jump <= moduleIn.pcPlus4;
         moduleOut.addr_if_jump <= pcbranch;
         moduleOut.adopt_branch <= adopt_branch_output;
+
+        moduleOut.is_amo <= isAMO;
+        moduleOut.amo_type <= amo_type;
     end
 end
 

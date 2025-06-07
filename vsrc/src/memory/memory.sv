@@ -4,6 +4,7 @@
 `include "src/memory/memory_helper.sv"
 `include "src/memory/memory_solver.sv"
 `include "src/memory/prediction_util.sv"
+`include "src/memory/amo_alu.sv"
 `endif
 
 module memory import common::*; import csr_pkg::*;(
@@ -36,11 +37,12 @@ module memory import common::*; import csr_pkg::*;(
     output logic feedback_result
 );
 
-logic cur_mem_op_done;
+u2 mem_state; // 0: idle, 1: request sent, 2: request2 sent, 3: response received
+
 u64 cur_mem_data;
 logic cur_mem_op_started;
 
-assign ok_to_proceed = ~(moduleIn.valid) | ~(moduleIn.isMemRead|moduleIn.isMemWrite) | cur_mem_op_done;
+assign ok_to_proceed = ~(moduleIn.valid) | ~(moduleIn.isMemRead|moduleIn.isMemWrite) | mem_state == 3;
 
 assign JumpEn = (
     (moduleIn.adopt_branch!=
@@ -63,7 +65,7 @@ assign JumpAddr = exception!=NO_EXCEPTION? mtvec:
 assign forwardSource.valid = moduleIn.valid & moduleIn.wd != 0;
 assign forwardSource.isWb = moduleIn.isWriteBack;
 assign forwardSource.wd = moduleIn.wd;
-assign forwardSource.wdData = moduleIn.isJump?moduleIn.pcPlus4 : moduleIn.isMemRead ? dataOut:moduleIn.aluOut;
+assign forwardSource.wdData = moduleIn.isJump?moduleIn.pcPlus4 : (moduleIn.isMemRead|moduleIn.is_amo) ? dataOut : moduleIn.aluOut;
 
 prediction_util prediction_util_inst(
     .clk(clk),
@@ -71,6 +73,15 @@ prediction_util prediction_util_inst(
     .valid(prediction_util_valid),
     .isPrediction((moduleIn.isJump|moduleIn.isBranch) & moduleIn.valid),
     .predictionHit(moduleIn.adopt_branch==(moduleIn.isJump|(moduleIn.isBranch&moduleIn.flagResult)))
+);
+
+u64 amo_res;
+
+amo_alu amo_alu_inst(
+    .m_rs1(dresp.data),
+    .rs2(moduleIn.rs2),
+    .amo_type(moduleIn.amo_type),
+    .result(amo_res)
 );
 
 logic prediction_util_valid;
@@ -84,7 +95,7 @@ logic skp_send;
 
 logic memNotAligned, addr_not_aligned;
 
-assign memNotAligned = (moduleIn.isMemRead | moduleIn.isMemWrite) & addr_not_aligned & moduleIn.valid;
+assign memNotAligned = (moduleIn.isMemRead | moduleIn.isMemWrite | moduleIn.is_amo) & addr_not_aligned & moduleIn.valid;
 exception_t exception;
 
 assign exception = (moduleIn.exception_valid) ? moduleIn.exception : 
@@ -93,10 +104,17 @@ assign exception = (moduleIn.exception_valid) ? moduleIn.exception :
                     moduleIn.isMemWrite ? STORE_AMO_ADDRESS_MISALIGNED :
                     NO_EXCEPTION
                   ): NO_EXCEPTION;
+
+u64 addr_req;
+u64 data_req;
+
+assign data_req=moduleIn.is_amo?amo_res:moduleIn.rs2;
+
+assign addr_req=moduleIn.is_amo?moduleIn.rs1:moduleIn.aluOut;
                 
 memoryHelper memoryHelper_inst(
-    .addressReq(moduleIn.aluOut),
-    .dataIn(moduleIn.rs2),
+    .addressReq(addr_req),
+    .dataIn(data_req),
     .memMode(moduleIn.memMode),
     .addr(addr),
     .msize(msize),
@@ -106,7 +124,7 @@ memoryHelper memoryHelper_inst(
 );
 
 memorySolver memorySolver_inst(
-    .addressReq(moduleIn.aluOut),
+    .addressReq(addr_req),
     .dataIn(cur_mem_data),
     .memMode(moduleIn.memMode),
     .data(dataOut)
@@ -117,7 +135,7 @@ u64 dataOut;
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         moduleOut.valid <= 0;
-        cur_mem_op_done <= 0;
+        mem_state <= 0;
     end else begin 
         if(ok_to_proceed_overall) begin
             prediction_util_valid <= 1;
@@ -134,7 +152,7 @@ always_ff @(posedge clk or posedge rst) begin
             moduleOut.instr <= moduleIn.instr;
 
             moduleOut.isMem <= moduleIn.isMemRead | moduleIn.isMemWrite;
-            moduleOut.memAddr <= moduleIn.aluOut;
+            moduleOut.memAddr <= addr_req;
             moduleOut.skip <= skp_send;
 
             if(moduleIn.exception_valid | (memNotAligned & moduleIn.valid)) begin
@@ -200,23 +218,37 @@ always_ff @(posedge clk or posedge rst) begin
                 priviledgeModeWrite <= 0;
             end
 
-            cur_mem_op_done <= 0;
+            mem_state <= 0;
             cur_mem_op_started <= 0;
         end else begin 
             prediction_util_valid <= 0;
         end
-        if(dresp.addr_ok & dresp.data_ok & cur_mem_op_started) begin
+        if(dresp.addr_ok & dresp.data_ok & mem_state==1) begin
             cur_mem_data <= dresp.data;
-            cur_mem_op_done <= 1;
             skp_send <= skip;
             dreq.valid <= 0;
+
+            if(moduleIn.is_amo) begin //todo LR SC should be considered
+                mem_state <= 2;
+                dreq.valid <= 1;
+                dreq.addr <= addr;
+                dreq.strobe <= strobe;
+                dreq.data <= data;
+                dreq.size <= msize;
+            end else begin
+                mem_state <= 3;
+            end
+        end else if(dresp.addr_ok & dresp.data_ok & mem_state==2) begin
+            dreq.valid <= 0;
+            mem_state <= 3;
         end
-        if(moduleIn.valid & (moduleIn.isMemRead|moduleIn.isMemWrite) & ~cur_mem_op_started) begin
-            cur_mem_op_started <= 1;
+        if(moduleIn.valid & (moduleIn.isMemRead|moduleIn.isMemWrite) & mem_state==0) begin
+            //todo LR SC should be considered
+            mem_state <= 1;
             dreq.addr <= addr;
             dreq.valid <= 1;
             dreq.size <= msize;
-            if(moduleIn.isMemRead) begin
+            if(moduleIn.isMemRead | moduleIn.is_amo) begin
                 dreq.strobe <= 0;
             end else begin
                 dreq.strobe <= strobe;

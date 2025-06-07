@@ -274,6 +274,32 @@ typedef enum u4 {
     NO_EXCEPTION = 4'b1111
 } exception_t;
 
+typedef enum u6 {
+    LR_W = 6'b000010,
+    SC_W = 6'b000011,
+    AMO_SWAP_W = 6'b000001,
+    AMO_ADD_W = 6'b000000,
+    AMO_XOR_W = 6'b000100,
+    AMO_AND_W = 6'b001100,
+    AMO_OR_W = 6'b001000,
+    AMO_MIN_W = 6'b010000,
+    AMO_MAX_W = 6'b010100,
+    AMO_MINU_W = 6'b011000,
+    AMO_MAXU_W = 6'b011100,
+    LR_D = 6'b100010,
+    SC_D = 6'b100011,
+    AMO_SWAP_D = 6'b100001,
+    AMO_ADD_D = 6'b100000,
+    AMO_XOR_D = 6'b100100,
+    AMO_AND_D = 6'b101100,
+    AMO_OR_D = 6'b101000,
+    AMO_MIN_D = 6'b110000,
+    AMO_MAX_D = 6'b110100,
+    AMO_MINU_D = 6'b111000,
+    AMO_MAXU_D = 6'b111100
+
+} amo_t;
+
 typedef struct packed {
     logic  valid;
     u64 pcPlus4;
@@ -328,10 +354,14 @@ typedef struct packed {
     u64 addr_if_jump; // address to jump to if jump is taken
     u64 addr_if_not_jump; // address to jump to if jump is not taken
     logic adopt_branch; // if true, branch is adopted, otherwise, it is not adopted
+
+    logic is_amo;
+    amo_t amo_type;
 } REG_ID_EX;
 
 typedef struct packed {
     logic valid;
+    u64 rs1;
     u64 rs2;
     u64 aluOut;
     u64 pcPlus4;
@@ -361,6 +391,9 @@ typedef struct packed {
     u64 addr_if_jump; // address to jump to if jump is taken
     u64 addr_if_not_jump; // address to jump to if jump is not taken
     logic adopt_branch; // if true, branch is adopted, otherwise, it is not adopted
+
+    logic is_amo;
+    amo_t amo_type;
 } REG_EX_MEM;
 
 typedef struct packed {
