@@ -19,7 +19,7 @@ Disassembly of section .data:
   2c:	12345eb7          	lui	x29,0x12345
   30:	678e8e9b          	addiw	x29,x29,1656 # 12345678 <_binary_amoswap_test_bin_end+0x12345594>
   34:	0bde1663          	bne	x28,x29,e0 <_binary_amoswap_test_bin_start+0xe0>
-  38:	0002af03          	lw	x30,0(x5)
+  38:	0002ef03          	lwu	x30,0(x5)
   3c:	00038fb7          	lui	x31,0x38
   40:	ab7f8f9b          	addiw	x31,x31,-1353 # 37ab7 <_binary_amoswap_test_bin_end+0x379d3>
   44:	00ef9f93          	slli	x31,x31,0xe
@@ -36,7 +36,7 @@ Disassembly of section .data:
   70:	12345eb7          	lui	x29,0x12345
   74:	678e8e9b          	addiw	x29,x29,1656 # 12345678 <_binary_amoswap_test_bin_end+0x12345594>
   78:	07de1463          	bne	x28,x29,e0 <_binary_amoswap_test_bin_start+0xe0>
-  7c:	0002af03          	lw	x30,0(x5)
+  7c:	0002ef03          	lwu	x30,0(x5)
   80:	12345fb7          	lui	x31,0x12345
   84:	679f8f9b          	addiw	x31,x31,1657 # 12345679 <_binary_amoswap_test_bin_end+0x12345595>
   88:	05ff1c63          	bne	x30,x31,e0 <_binary_amoswap_test_bin_start+0xe0>
@@ -54,7 +54,7 @@ Disassembly of section .data:
   b8:	19c2aeaf          	sc.w	x29,x28,(x5)
   bc:	00000f13          	li	x30,0
   c0:	03ee9063          	bne	x29,x30,e0 <_binary_amoswap_test_bin_start+0xe0>
-  c4:	0002af83          	lw	x31,0(x5)
+  c4:	0002ef83          	lwu	x31,0(x5)
   c8:	00038e37          	lui	x28,0x38
   cc:	ab7e0e1b          	addiw	x28,x28,-1353 # 37ab7 <_binary_amoswap_test_bin_end+0x379d3>
   d0:	00ee1e13          	slli	x28,x28,0xe
