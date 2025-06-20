@@ -42,7 +42,9 @@ u2 mem_state; // 0: idle, 1: request sent, 2: request2 sent, 3: response receive
 u64 cur_mem_data;
 logic cur_mem_op_started;
 
-assign ok_to_proceed = ~(moduleIn.valid) | ~(moduleIn.isMemRead|moduleIn.isMemWrite) | mem_state == 3;
+u64 sc_feedback;
+
+assign ok_to_proceed = ~(moduleIn.valid) | ~(moduleIn.isMemRead|moduleIn.isMemWrite|moduleIn.is_amo) | mem_state == 3;
 
 assign JumpEn = (
     (moduleIn.adopt_branch!=
@@ -111,11 +113,21 @@ u64 data_req;
 assign data_req=moduleIn.is_amo?amo_res:moduleIn.rs2;
 
 assign addr_req=moduleIn.is_amo?moduleIn.rs1:moduleIn.aluOut;
+
+u4 memMode_Helper_mapped, memMode_Solver_mapped;
+
+assign memMode_Helper_mapped = moduleIn.is_amo ? (
+    moduleIn.amo_type[5] == 1? 4'b1011 : 4'b1010// AMO_D : AMO_W
+) : moduleIn.memMode;
+
+assign memMode_Solver_mapped = moduleIn.is_amo ? (
+    moduleIn.amo_type[5] == 1? 4'b0011 : 4'b0010// AMO_D : AMO_W
+) : moduleIn.memMode;
                 
 memoryHelper memoryHelper_inst(
     .addressReq(addr_req),
     .dataIn(data_req),
-    .memMode(moduleIn.memMode),
+    .memMode(memMode_Helper_mapped),
     .addr(addr),
     .msize(msize),
     .strobe(strobe),
@@ -126,9 +138,11 @@ memoryHelper memoryHelper_inst(
 memorySolver memorySolver_inst(
     .addressReq(addr_req),
     .dataIn(cur_mem_data),
-    .memMode(moduleIn.memMode),
+    .memMode(memMode_Solver_mapped),
     .data(dataOut)
 );
+
+reservation_set_line_t reservation_set_line[1:0];
 
 u64 dataOut;
 
@@ -144,14 +158,14 @@ always_ff @(posedge clk or posedge rst) begin
             moduleOut.aluOut <= moduleIn.aluOut;
             moduleOut.pcPlus4 <= moduleIn.pcPlus4;
             moduleOut.isWriteBack <= moduleIn.isWriteBack & ~moduleIn.exception_valid & ~memNotAligned;
-            moduleOut.isMemRead <= moduleIn.isMemRead;
+            moduleOut.isMemRead <= moduleIn.isMemRead | moduleIn.is_amo;
             moduleOut.wd <= moduleIn.wd;
             moduleOut.isJump <= moduleIn.isJump;
-            moduleOut.memOut <= dataOut;
+            moduleOut.memOut <= (moduleIn.is_amo && (moduleIn.amo_type == SC_W || moduleIn.amo_type == SC_D))? sc_feedback : dataOut;
             moduleOut.instrAddr <= moduleIn.instrAddr;
             moduleOut.instr <= moduleIn.instr;
 
-            moduleOut.isMem <= moduleIn.isMemRead | moduleIn.isMemWrite;
+            moduleOut.isMem <= moduleIn.isMemRead | moduleIn.isMemWrite | moduleIn.is_amo;
             moduleOut.memAddr <= addr_req;
             moduleOut.skip <= skp_send;
 
@@ -229,12 +243,16 @@ always_ff @(posedge clk or posedge rst) begin
             dreq.valid <= 0;
 
             if(moduleIn.is_amo) begin //todo LR SC should be considered
-                mem_state <= 2;
-                dreq.valid <= 1;
-                dreq.addr <= addr;
-                dreq.strobe <= strobe;
-                dreq.data <= data;
-                dreq.size <= msize;
+                if (moduleIn.amo_type==LR_W || moduleIn.amo_type==LR_D || moduleIn.amo_type==SC_W || moduleIn.amo_type==SC_D) begin
+                    mem_state <= 3;
+                end else begin
+                    mem_state <= 2;
+                    dreq.valid <= 1;
+                    dreq.addr <= addr;
+                    dreq.strobe <= strobe;
+                    dreq.data <= data;
+                    dreq.size <= msize;
+                end
             end else begin
                 mem_state <= 3;
             end
@@ -242,17 +260,50 @@ always_ff @(posedge clk or posedge rst) begin
             dreq.valid <= 0;
             mem_state <= 3;
         end
-        if(moduleIn.valid & (moduleIn.isMemRead|moduleIn.isMemWrite) & mem_state==0) begin
-            //todo LR SC should be considered
-            mem_state <= 1;
+        if(moduleIn.valid & (moduleIn.isMemRead|moduleIn.isMemWrite|moduleIn.is_amo) & mem_state==0) begin
             dreq.addr <= addr;
-            dreq.valid <= 1;
             dreq.size <= msize;
-            if(moduleIn.isMemRead | moduleIn.is_amo) begin
+            if(moduleIn.isMemRead) begin
                 dreq.strobe <= 0;
+                mem_state <= 1;
+                dreq.valid <= 1;
+            end else if(moduleIn.is_amo) begin
+                if (moduleIn.amo_type==LR_W || moduleIn.amo_type==LR_D) begin
+                    // add to reservation set
+                    if(reservation_set_line[0].valid) begin
+                        reservation_set_line[1] <= reservation_set_line[0];
+                    end
+                    reservation_set_line[0].valid <= 1;
+                    reservation_set_line[0].address <= addr_req;
+                    mem_state <= 1;
+                    dreq.valid <= 1;
+                end
+
+                if (moduleIn.amo_type==SC_W || moduleIn.amo_type==SC_D) begin
+                    if((reservation_set_line[0].valid && reservation_set_line[0].address == addr_req) || (reservation_set_line[1].valid && reservation_set_line[1].address == addr_req)) begin
+                        // SC succeeded, return 0
+                        sc_feedback <= 0;
+                        mem_state <= 1;
+                        dreq.valid <= 1;
+                        dreq.strobe <= strobe;
+                        dreq.data <= data;
+                    end else begin
+                        // SC failed, return 1
+                        sc_feedback <= 1;
+                        mem_state <= 3;
+                    end
+                    reservation_set_line[0].valid <= 0;
+                    reservation_set_line[1].valid <= 0;
+                end else begin
+                    dreq.strobe <= 0;
+                    mem_state <= 1;
+                    dreq.valid <= 1;
+                end
             end else begin
                 dreq.strobe <= strobe;
                 dreq.data <= data;
+                mem_state <= 1;
+                dreq.valid <= 1;
             end
         end
     end

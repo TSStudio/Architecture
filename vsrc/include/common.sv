@@ -300,6 +300,11 @@ typedef enum u6 {
 
 } amo_t;
 
+typedef struct packed{
+    logic valid;
+    u64 address;
+} reservation_set_line_t;
+
 typedef struct packed {
     logic  valid;
     u64 pcPlus4;

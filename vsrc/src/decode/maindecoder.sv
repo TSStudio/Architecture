@@ -431,6 +431,36 @@ always_comb begin
         end else begin 
             illegal = 1;
         end
+    end else if(instr[6:0]==7'b0101111) begin // RV32I-A, atomic
+        if(funct3==3'b011 || funct3==3'b010) begin // 
+            if(instr[31:27]==5'b00000) begin // amoadd
+                illegal = 0;
+            end else if(instr[31:27]==5'b00001) begin // amoswap
+                illegal = 0;
+            end else if(instr[31:27]==5'b01100) begin // amoand
+                illegal = 0;
+            end else if(instr[31:27]==5'b00100) begin // amoxor
+                illegal = 0;
+            end else if(instr[31:27]==5'b01000) begin // amoor
+                illegal = 0;
+            end else if(instr[31:27]==5'b10000) begin // amomin
+                illegal = 0;
+            end else if(instr[31:27]==5'b10100) begin // amomax
+                illegal = 0;
+            end else if(instr[31:27]==5'b11000) begin // amominu
+                illegal = 0;
+            end else if(instr[31:27]==5'b11100) begin // amomaxu
+                illegal = 0;
+            end else if(instr[31:27]==5'b00010) begin // lr
+                illegal = 0;
+            end else if(instr[31:27]==5'b00011) begin // sc
+                illegal = 0;
+            end else begin 
+                illegal = 1;
+            end
+        end else begin 
+            illegal = 1;
+        end
     end else begin 
         illegal = 1;
     end
