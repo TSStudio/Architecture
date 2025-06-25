@@ -242,7 +242,7 @@ always_ff @(posedge clk or posedge rst) begin
             skp_send <= skip;
             dreq.valid <= 0;
 
-            if(moduleIn.is_amo) begin //todo LR SC should be considered
+            if(moduleIn.is_amo) begin
                 if (moduleIn.amo_type==LR_W || moduleIn.amo_type==LR_D || moduleIn.amo_type==SC_W || moduleIn.amo_type==SC_D) begin
                     mem_state <= 3;
                 end else begin
